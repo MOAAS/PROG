@@ -11,7 +11,7 @@ class Board
 {
 public:
 	Board(int x, int y);
-	void Mostrador() const;
+	void display() const;
 	void Principal();	
 	void InsereHorizontal(int posicaoX, int posicaoY, string palavra);
 	void InsereVertical(int posicaoX, int posicaoY, string palavra);
