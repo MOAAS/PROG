@@ -17,3 +17,4 @@ private:
 
 void stringUpper(string &input);
 void alphaOnly(string &str);
+bool wildcardMatch(const char *str, const char *strWild);
