@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+using namespace std;
 
 
 Dictionary::Dictionary() {
@@ -37,19 +39,10 @@ void Dictionary::load(string filePath) {
 }
 
 void Dictionary::display() const {
-	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++)
-	{
+	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
 		cout << ite->first << ": ";
 		for (int i = 0; i < (ite->second).size(); i++)
 			cout << (ite->second)[i] << ", ";
-		cout << endl;
-
-	}
-	for (auto ite:words)
-	{
-		cout << ite.first << ": ";
-		for (int i = 0; i < (ite.second).size(); i++)
-			cout << (ite.second)[i] << ", ";
 		cout << endl;
 
 	}
@@ -59,7 +52,7 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	vector<string> matches;
 	for (auto it : words) {
 		string key = it.first;
-		if (wildcardMatch(key.c_str, wildcardWord.c_str())) {
+		if (wildcardMatch(key.c_str(), wildcardWord.c_str())) {
 			matches.push_back(it.first);
 		}
 	}
@@ -93,9 +86,9 @@ void stringUpper(string &input) { // Converte uma string para upper case. Passad
 	transform(input.begin(), input.end(), input.begin(), ::toupper);
 }
 
-void alphaOnly(string &str) { // Apaga qualquer carater nao alfanumerico
+void alphaOnly(string &str) { // Apaga qualquer carater nao alfabético (pode conter hifens)
 	for (int i = 0; i < str.size(); i++) {
-		if (!(isalpha(str[i])))
+		if (!isalpha(str[i]) && str[i] != '-')
 			str.erase(i, 1);
 	}
 }
