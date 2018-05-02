@@ -19,7 +19,7 @@ void Board::display() const {
 	const int N_COLUMNS = y;
 	char letras_cima = 'a'; // Limite superior terá letras minúsculas.
 	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
-	setcolor(12); // LIGHT RED
+	setcolor(LIGHTRED);
 	cout << "   ";
 	for (int i = 0; i < N_ROWS; i++)	{
 		cout << letras_cima << ' ';
@@ -28,14 +28,14 @@ void Board::display() const {
 	cout << endl;
 	for (int i = 0; i < N_COLUMNS; i++)	{
 		cout << letras_lado << "  ";
-		setcolor(0, 15); // BLACK, WHITE
+		setcolor(BLACK,WHITE); 
 		letras_lado++;
 		for (int j = 0; j < N_ROWS; j++)
 			cout << board[j][i] << ' ';
-		setcolor(12); // LIGHT RED
+		setcolor(LIGHRED); 
 		cout << endl;
 	}
-    setcolor(15); // WHITE
+    setcolor(WHITE); 
 }
 
 void Board::Principal()
