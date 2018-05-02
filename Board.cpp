@@ -7,12 +7,11 @@
 #include <string>
 #include "consolecolors.h"
 
-Board::Board(int tx, int ty)
-{
-	vector<vector<char>> v(tx, vector<char>(ty, '.'));
+Board::Board(int x, int y) {
+	vector<vector<char>> v(x, vector<char>(y, '.'));
 	board = v;
-	x = tx;
-	y = ty;
+	this->x = x; // + 1 valor
+	this->y = y; // + 1 valor
 }
 
 void Board::Mostrador() const
