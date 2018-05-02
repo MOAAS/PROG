@@ -14,31 +14,28 @@ Board::Board(int x, int y) {
 	this->y = y; // + 1 valor
 }
 
-void Board::Mostrador() const
-{
-	int tamanhox = x;
-	int tamanhoy = y;
-	char cima = 'a';
-	char lado = 'A';
-	//setcolor(12);
+void Board::display() const {
+	const int N_ROWS = x;
+	const int N_COLUMNS = y;
+	char letras_cima = 'a'; // Limite superior terá letras minúsculas.
+	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
+	setcolor(12); // LIGHT RED
 	cout << "   ";
-	for (int i = 0; i < tamanhox; i++)
-	{
-		cout << cima << ' ';
-		cima++;
+	for (int i = 0; i < N_ROWS; i++)	{
+		cout << letras_cima << ' ';
+		letras_cima++;
 	}
 	cout << endl;
-	for (int i = 0; i < tamanhoy; i++)
-	{
-		cout << lado << "  ";
-		//setcolor(0, 15);
-		lado++;
-		for (int j = 0; j < tamanhox; j++)
+	for (int i = 0; i < N_COLUMNS; i++)	{
+		cout << letras_lado << "  ";
+		setcolor(0, 15); // BLACK, WHITE
+		letras_lado++;
+		for (int j = 0; j < N_ROWS; j++)
 			cout << board[j][i] << ' ';
-		//setcolor(12);
+		setcolor(12); // LIGHT RED
 		cout << endl;
 	}
-	//setcolor(15);
+    setcolor(15); // WHITE
 }
 
 void Board::Principal()
