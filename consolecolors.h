@@ -1,13 +1,12 @@
 #pragma once
+#include "stdafx.h"
 #include <iostream>
-#include <vector>
 #include <ctime>
 #include <cstdlib>
 #include <windows.h>
-#include <string>
-#ifndef COLOR_H
-#define COLOR_H
-
+using namespace std;
+//==========================================================================================
+//COLOR CODES: (alternative: use symbolic const’s)
 #define BLACK 0
 #define BLUE 1
 #define GREEN 2
@@ -24,7 +23,7 @@
 #define LIGHTMAGENTA 13
 #define YELLOW 14
 #define WHITE 15
-
+//==========================================================================================
 void clrscr(void)
 {
 	COORD coordScreen = { 0, 0 }; // upper left corner
@@ -69,4 +68,3 @@ void setcolor(unsigned int color, unsigned int background_color)
 		SetConsoleTextAttribute(hCon, color | BACKGROUND_BLUE | BACKGROUND_GREEN |
 			BACKGROUND_RED);
 }
-#endif
