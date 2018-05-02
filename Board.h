@@ -4,9 +4,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
-#include "consolecolors.h"
-#ifndef BOARD_H
-#define BOARD_H
 
 using namespace std;
 
@@ -25,5 +22,3 @@ private:
 	vector<vector<char>> board;
 	int x, y;
 };
-
-#endif
