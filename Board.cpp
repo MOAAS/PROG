@@ -55,7 +55,7 @@ void Board::getWord()
 
 	string word;
 	cin >> word;
-	stringUpper(input);
+	stringUpper(word);
 	//loop ate palavra ser valida (palavra ou + ou ?)
 	//se = ? (sugerir) , se = - (apagar) 
 	if (Verify(posX, posY, direction, word))
