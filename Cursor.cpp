@@ -43,3 +43,10 @@ Cursor Cursor::operator--(int unused) {
 	}
 	return *this;
 }
+
+int Cursor::maincoord()
+{
+	if (dir == 'H')
+		return x;
+	else return y;
+}
