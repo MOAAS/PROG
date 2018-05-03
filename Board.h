@@ -4,8 +4,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
-#include "Cursor.h"
 #include <map>
+#include "Cursor.h"
 
 using namespace std;
 
@@ -19,10 +19,11 @@ public:
 	void Insert(int posX, int posY, char direction, string palavra); //mete
 	void ChangeChar(char letra); //altera no board a letra com base na posicao do cursor
 	char ShowChar() const; //ve que letra esta na posicao do cursor
-	int CoordLimit() const; //da a coordenada maxima do board na direcao atual
+	int CoordLimit() const; //da a coordenada maxima do board na direcao atual (usa o cursor)
 private:
 	vector<vector<char>> board;
 	int x, y;
 	map<string, string> words;
 	Cursor Cursor;
 };
+
