@@ -48,7 +48,6 @@ void Board::getWord()
 	// '-' e '?'
 	string input;
 	cin >> input;
-	stringUpper(input);
 	posY = (int)input[0] - (int)'A';
 	posX = (int)input[1] - (int)'a';
 	direction = input[2];
@@ -56,12 +55,12 @@ void Board::getWord()
 
 	string word;
 	cin >> word;
+	stringUpper(input);
 	//loop ate palavra ser valida (palavra ou + ou ?)
 	//se = ? (sugerir) , se = - (apagar) 
 	if (Verify(posX, posY, direction, word))
 		Insert(posX, posY, direction, word);
 	else cout << "INVALIDO" << endl;
-
 }
 bool Board::Verify(int posX, int posY, char direction, string word)
 {
