@@ -103,6 +103,9 @@ void Board::Insert(int posX, int posY, char direction, string word)
 	}
 	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
 		ChangeChar('#');
+	char LinColDir[3];
+	LinColDir[0] = posX + 'a'; LinColDir[1] = posY + 'A'; LinColDir[2] = direction;
+	placedWordsCoords[word] = LinColDir;
 }
 
 void Board::ChangeChar(char letra)
@@ -123,7 +126,7 @@ int Board::CoordLimit() const
 
 vector<string> Board::getPlacedWords() const {
 	vector<string> placedWords;
-	for (map<string, string>::const_iterator ite = placedWordsCoords.begin(); ite != placedWordsCoords.end(); i++) {
+	for (map<string, string>::const_iterator ite = placedWordsCoords.begin(); ite != placedWordsCoords.end(); ite++) {
 		placedWords.push_back(ite->first);
 	}
 	return placedWords;
