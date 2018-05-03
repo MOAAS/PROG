@@ -64,7 +64,21 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 }
 
 
-bool lineValid(string &line) {
+// Se a palavra não existir, devolve uma string vazia.
+string Dictionary::getRandomSynonym(string word) const {
+	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
+		if (ite->first == word && (ite->second).size() != 0) { // A segunda condição apenas está lá por razões de segurança, pois deverá sempre haver sinónimos.
+			vector<string> synonyms = ite->second;
+			size_t rand_index = rand() % synonyms.size();
+			return synonyms[rand_index];
+		}
+	}
+	return "";
+}
+
+
+
+bool lineValid(string &line) { // Remove ':' e ';' de line. Retorna falso se a linha não for válida.
 	for (int i = 0; i < line.size(); i++) {
 		if (line[i] == ':' || line[i] == ',') {
 			line.erase(i, 1);
@@ -74,6 +88,7 @@ bool lineValid(string &line) {
 	}
 	return true;
 }
+
 
 // Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 
