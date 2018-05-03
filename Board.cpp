@@ -132,3 +132,24 @@ vector<string> Board::getPlacedWords() const {
 	}
 	return placedWords;
 }
+
+bool Board::isFull() const
+{
+	for (int i = 0; i < x; i++)
+	{
+		for (int j = 0; j < y; j++)
+			if (board[i][j] == '.')
+				return false;
+	}
+	return true;
+}
+
+void Board::Fill()
+{
+	for (int i = 0; i < x; i++)
+	{
+		for (int j = 0; j < y; j++)
+			if (board[i][j] == '.')
+				board[i][j] = '#';
+	}
+}
