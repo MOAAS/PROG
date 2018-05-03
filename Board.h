@@ -20,10 +20,10 @@ public:
 	void ChangeChar(char letra); //altera no board a letra com base na posicao do cursor
 	char ShowChar() const; //ve que letra esta na posicao do cursor
 	int CoordLimit() const; //da a coordenada maxima do board na direcao atual (usa o cursor)
+	vector<string> getPlacedWords() const;
 private:
 	vector<vector<char>> board;
 	int x, y;
-	map<string, string> words;
+	map<string, string> placedWordsCoords; // "Palavra", "LCD"
 	Cursor Cursor;
 };
-
