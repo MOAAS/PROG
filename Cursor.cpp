@@ -44,7 +44,8 @@ Cursor Cursor::operator--(int unused) {
 	return *this;
 }
 
-int Cursor::maincoord()
+
+int Cursor::CursorMainCoord()
 {
 	if (dir == 'H')
 		return x;
