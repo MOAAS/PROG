@@ -9,7 +9,7 @@ public:
 	void changeDir(char dir);
 	Cursor operator++(int unused);
 	Cursor operator--(int unused);
-	int CursorMainCoord(); //da a coordenada principal na direcao atual
+	int MainCoord(); //da a coordenada principal na direcao atual
 private:
 	int x, y;
 	char dir; // Direção. H / V
