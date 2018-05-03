@@ -63,7 +63,6 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	return matches;
 }
 
-/////////////////
 
 bool lineValid(string &line) {
 	for (int i = 0; i < line.size(); i++) {
