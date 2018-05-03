@@ -6,8 +6,8 @@
 #include <cstdlib>
 #include <windows.h>
 #include <string>
-#include "Dictionary.h"
 #include "consolecolors.h"
+#include "Dictionary.h"
 
 Board::Board(int x, int y) {
 	vector<vector<char>> v(x, vector<char>(y, '.'));
@@ -58,8 +58,9 @@ void Board::getWord()
 	cin >> word;
 	//loop ate palavra ser valida (palavra ou + ou ?)
 	//se = ? (sugerir) , se = - (apagar) 
-	if (Verify(posX, posY, direction, word))
+	if (Verify(posX, posY, direction, word)) {
 		Insert(posX, posY, direction, word);
+	}
 	else cout << "INVALIDO" << endl;
 
 }
@@ -106,7 +107,7 @@ void Board::Insert(int posX, int posY, char direction, string word)
 	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
 		ChangeChar('#');
 	char LinColDir[3];
-	LinColDir[0] = posX + 'a'; LinColDir[1] = posY + 'A'; LinColDir[2] = direction;
+	LinColDir[0] = posX + 'a'; 	LinColDir[1] = posY + 'A'; 	LinColDir[2] = direction;
 	placedWordsCoords[word] = LinColDir;
 }
 
