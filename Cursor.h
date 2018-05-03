@@ -2,6 +2,7 @@
 class Cursor {
 public:
 	friend class Board;
+	Cursor();
 	Cursor(int x, int y, char dir);
 	void moveTo(int x, int y);
 	void moveTo(int x, int y, char dir);
@@ -10,5 +11,5 @@ public:
 	Cursor operator--(int unused);
 private:
 	int x, y;
-	char dir; // Direção. H / V
+	char dir; // DireÃ§Ã£o. H / V
 };
