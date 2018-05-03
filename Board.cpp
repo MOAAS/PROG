@@ -48,6 +48,7 @@ void Board::getWord()
 	// '-' e '?'
 	string input;
 	cin >> input;
+	stringUpper(input);
 	posY = (int)input[0] - (int)'A';
 	posX = (int)input[1] - (int)'a';
 	direction = input[2];
@@ -89,7 +90,6 @@ bool Board::Verify(int posX, int posY, char direction, string word)
 
 void Board::Insert(int posX, int posY, char direction, string word)
 {
-	stringUpper(word);
 	Cursor.moveTo(posX, posY, direction);
 	int size = word.length();
 	if (Cursor.MainCoord() > 0)
