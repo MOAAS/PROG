@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <windows.h>
 #include <string>
+#include "Dictionary.h"
 #include "consolecolors.h"
 
 Board::Board(int x, int y) {
@@ -88,6 +89,7 @@ bool Board::Verify(int posX, int posY, char direction, string word)
 
 void Board::Insert(int posX, int posY, char direction, string word)
 {
+	stringUpper(word);
 	Cursor.moveTo(posX, posY, direction);
 	int size = word.length();
 	if (Cursor.MainCoord() > 0)
