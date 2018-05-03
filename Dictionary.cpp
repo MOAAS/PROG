@@ -20,15 +20,18 @@ bool Dictionary::wordExists(string word) const{
 	return false;
 }
 
+// Transfere as palavras e os sinonimos do ficheiro de texto para o dicionario
 void Dictionary::load(string filePath) {
 	string line, keyWord, synonym; // Variaveis auxiliares.
 	ifstream file(filePath);
 	if (file.is_open()) { 
 		while (getline(file, line)) { // Retira uma linha do ficheiro, guarda em line.
+			if (!lineValid(line))
+				continue;
 			istringstream iss(line); // Coloca line em iss.
-			iss >> keyWord; alphaOnly(keyWord); stringUpper(keyWord);	// Inicializa keyWord, apaga todos os carateres a mais. Coloca todos os carateres em maiusculas.
+			iss >> keyWord; stringUpper(keyWord);	// Inicializa keyWord, apaga todos os carateres a mais. Coloca todos os carateres em maiusculas.
 			while (iss >> synonym) { // Faz o mesmo com todos os sinonimos.
-				alphaOnly(synonym); stringUpper(synonym);
+				stringUpper(synonym);
 				words[keyWord].push_back(synonym); // Coloca no vetor associado a keyWord.
 			}
 		}
@@ -38,16 +41,17 @@ void Dictionary::load(string filePath) {
 	}
 }
 
+// Mostra as palavras do dicionario e os seus sinonimos. debug
 void Dictionary::display() const {
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
 		cout << ite->first << ": ";
 		for (int i = 0; i < (ite->second).size(); i++)
 			cout << (ite->second)[i] << ", ";
 		cout << endl;
-
 	}
 }
 
+// Recebe uma string com wildcards (wildcardWord). Devolve um vetor com todas as strings que podem ser formadas.
 vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	vector<string> matches;
 	for (auto it : words) {
@@ -58,6 +62,21 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	}
 	return matches;
 }
+
+/////////////////
+
+bool lineValid(string &line) {
+	for (int i = 0; i < line.size(); i++) {
+		if (line[i] == ':' || line[i] == ',') {
+			line.erase(i, 1);
+		}
+		if (!isalpha(line[i]) && line[i] != ' ')
+			return false;
+	}
+	return true;
+}
+
+// Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 
 bool wildcardMatch(const char *str, const char *strWild) {
 	while (*strWild) {
@@ -84,11 +103,4 @@ bool wildcardMatch(const char *str, const char *strWild) {
 
 void stringUpper(string &input) { // Converte uma string para upper case. Passada por referencia.
 	transform(input.begin(), input.end(), input.begin(), ::toupper);
-}
-
-void alphaOnly(string &str) { // Apaga qualquer carater nao alfabético (pode conter hifens)
-	for (int i = 0; i < str.size(); i++) {
-		if (!isalpha(str[i]) && str[i] != '-')
-			str.erase(i, 1);
-	}
 }

@@ -11,8 +11,8 @@
 Board::Board(int x, int y) {
 	vector<vector<char>> v(x, vector<char>(y, '.'));
 	board = v;
-	this->x = x; // + 1 valor
-	this->y = y; // + 1 valor
+	this->x = x;
+	this->y = y;
 }
 
 void Board::display() const {
@@ -20,23 +20,23 @@ void Board::display() const {
 	const int N_COLUMNS = y;
 	char letras_cima = 'a'; // Limite superior terá letras minúsculas.
 	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
-	setcolor(12); // LIGHT RED
+	setcolor(LIGHTRED); // LIGHT RED
 	cout << "   ";
-	for (int i = 0; i < N_ROWS; i++)	{
+	for (int i = 0; i < N_ROWS; i++) {
 		cout << letras_cima << ' ';
 		letras_cima++;
 	}
 	cout << endl;
-	for (int i = 0; i < N_COLUMNS; i++)	{
+	for (int i = 0; i < N_COLUMNS; i++) {
 		cout << letras_lado << "  ";
-		setcolor(0, 15); // BLACK, WHITE
+		setcolor(BLACK, WHITE); // BLACK, WHITE
 		letras_lado++;
 		for (int j = 0; j < N_ROWS; j++)
 			cout << board[j][i] << ' ';
-		setcolor(12); // LIGHT RED
+		setcolor(LIGHTRED); // LIGHT RED
 		cout << endl;
 	}
-    setcolor(15); // WHITE
+	setcolor(WHITE); // WHITE
 }
 
 void Board::getWord()
@@ -45,90 +45,78 @@ void Board::getWord()
 	char direction;
 	//CUIDADOS COM INPUT 
 	// '-' e '?'
-	//
-	string input; cin >> input;
+	string input;
+	cin >> input;
 	posY = (int)input[0] - (int)'A';
 	posX = (int)input[1] - (int)'a';
 	direction = input[2];
-	//loop ate input ser valido (coordenadas dentro dos limites ou ctrl-z) e coordenadas dentro dos limites!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//loop ate input ser valido (coordenadas dentro dos limites ou ctrl-z) 
 
-	string palavra;
-	cin >> palavra;
+	string word;
+	cin >> word;
 	//loop ate palavra ser valida (palavra ou + ou ?)
 	//se = ? (sugerir) , se = - (apagar) 
+	if (Verify(posX, posY, direction, word))
+		Insert(posX, posY, direction, word);
+	else cout << "INVALIDO" << endl;
 
-	//verificar
-	if (direction == 'H')
-		if (VerificaHorizontal(posX, posY, palavra))
-			InsereHorizontal(posX, posY, palavra);
-		else cout << "Invalido" << endl;
-	else if (direction == 'V')
-		if (VerificaVertical(posX, posY, palavra))
-			InsereVertical(posX, posY, palavra);
-		else cout << "Invalido" << endl;
 }
-////////////////////////////
-bool Board::VerificaHorizontal(int posX, int posY, string palavra)
+bool Board::Verify(int posX, int posY, char direction, string word)
 {
-	int tamanho = palavra.length();
-	if (posX + tamanho >= x) // Se nao couber.
+	Cursor.moveTo(posX, posY, direction);
+	int size = word.length();
+	if (Cursor.MainCoord() + size > CoordLimit())
 		return false;
-	if (posX > 0 && board[posX - 1][posY] != '#' && board[posX - 1][posY] != '.') // Se tiver espaço à esquerda, e se o espaço nao for nem '#' nem '.', retorna false.
-		return false;
-	for (int i = 0; i<tamanho; i++) // Verifica cada espaço um a um.
+	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
 	{
-		if (board[posX][posY] != palavra[i] && board[posX][posY] != '.') // O espaço tem de ser igual à letra que se quer colocar, ou estar vazio.
+		Cursor--;
+		if (ShowChar() != '#' && ShowChar() != '.')
 			return false;
-		posX++;
+		Cursor++;
 	}
-	if (posX < x && board[posX][posY] != '#' && board[posX][posY] != '.') // Se tiver espaço à esquerda, e se o espaço nao for nem '#' nem '.', retorna false.
-		return false;
+	for (int i = 0; i < size; i++)
+	{
+		if (ShowChar() != word[i] && ShowChar() != '.')
+			return false;
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
 	return true;
 }
 
-void Board::InsereHorizontal(int posX, int posY, string palavra)
+void Board::Insert(int posX, int posY, char direction, string word)
 {
-	int tamanho = palavra.length();
-	//direcao horizontal;
-	if (posX > 0) //verifica se pode por # antes
-		board[posX - 1][posY] = '#';
-	for (int i = 0; i<tamanho; i++)
+	Cursor.moveTo(posX, posY, direction);
+	int size = word.length();
+	if (Cursor.MainCoord() > 0)
 	{
-		board[posX][posY] = palavra[i];
-		posX++;
+		Cursor--;
+		ChangeChar('#');
+		Cursor++;
 	}
-	if (posX<x) //verifica se pode por # depois
-		board[posX][posY] = '#';
+	for (int i = 0; i<size; i++)
+	{
+		ChangeChar(word[i]);
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
+		ChangeChar('#');
 }
-//////////////////////////////////
-bool Board::VerificaVertical(int posX, int posY, string palavra)
+
+void Board::ChangeChar(char letra)
 {
-	int tamanho = palavra.length();
-	if (posX + tamanho >= y) // Se nao couber
-		return false;
-	if (posY > 0 && board[posX][posY - 1] != '#' && board[posX][posY - 1] != '.')
-			return false;
-	for (int i = 0; i<tamanho; i++)
-	{
-		if (board[posX][posY] != palavra[i] && board[posX][posY] != '.')
-			return false;
-		posY++;
-	}
-	if (posY < y && board[posX][posY] != '#' && board[posX][posY] != '.')
-			return false;
-	return true;
+	board[Cursor.x][Cursor.y] = letra;
 }
-void Board::InsereVertical(int posX, int posY, string palavra)
+char Board::ShowChar() const
 {
-	int tamanho = palavra.length();
-	//direcao vertical;
-	if (posY > 0) //verifica se pode por # antes
-		board[posX][posY - 1] = '#';
-	for (int i = 0; i<tamanho; i++)
-	{
-		board[posX][posY] = palavra[i];
-		posY++;
-	}
-	if (posY<y) //verifica se pode por # depois
-		board[posX][posY] = '#';
+	return board[Cursor.x][Cursor.y];
+}
+
+int Board::CoordLimit() const
+{
+	if (Cursor.dir == 'H')
+		return x;
+	else return y;
 }
