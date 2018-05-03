@@ -12,7 +12,7 @@ Board::Board(int x, int y) {
 	vector<vector<char>> v(x, vector<char>(y, '.'));
 	board = v;
 	this->x = x;
-	this->y = y; 
+	this->y = y;
 }
 
 void Board::display() const {
@@ -29,7 +29,7 @@ void Board::display() const {
 	cout << endl;
 	for (int i = 0; i < N_COLUMNS; i++) {
 		cout << letras_lado << "  ";
-		setcolor(BLACK,WHITE); // BLACK, WHITE
+		setcolor(BLACK, WHITE); // BLACK, WHITE
 		letras_lado++;
 		for (int j = 0; j < N_ROWS; j++)
 			cout << board[j][i] << ' ';
@@ -61,13 +61,13 @@ void Board::getWord()
 	else cout << "INVALIDO" << endl;
 
 }
-bool Board::Verify(int posX, int posY,char direction, string word)
+bool Board::Verify(int posX, int posY, char direction, string word)
 {
 	Cursor.moveTo(posX, posY, direction);
 	int size = word.length();
-	if (Cursor.CursorMainCoord() + size > BoardMainCoord())
+	if (Cursor.MainCoord() + size > CoordLimit())
 		return false;
-	if (Cursor.CursorMainCoord() > 0) //verifica se antes tem letra
+	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
 	{
 		Cursor--;
 		if (ShowChar() != '#' && ShowChar() != '.')
@@ -80,7 +80,7 @@ bool Board::Verify(int posX, int posY,char direction, string word)
 			return false;
 		Cursor++;
 	}
-	if (Cursor.CursorMainCoord() < BoardMainCoord()) //verifica se depois tem letra
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
 		if (ShowChar() != '#' && ShowChar() != '.')
 			return false;
 	return true;
@@ -89,8 +89,8 @@ bool Board::Verify(int posX, int posY,char direction, string word)
 void Board::Insert(int posX, int posY, char direction, string word)
 {
 	Cursor.moveTo(posX, posY, direction);
-	int size= word.length();
-	if (Cursor.CursorMainCoord() > 0)
+	int size = word.length();
+	if (Cursor.MainCoord() > 0)
 	{
 		Cursor--;
 		ChangeChar('#');
@@ -101,7 +101,7 @@ void Board::Insert(int posX, int posY, char direction, string word)
 		ChangeChar(word[i]);
 		Cursor++;
 	}
-	if (Cursor.CursorMainCoord()<BoardMainCoord()) //verifica se pode por # depois
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
 		ChangeChar('#');
 }
 
@@ -109,12 +109,12 @@ void Board::ChangeChar(char letra)
 {
 	board[Cursor.x][Cursor.y] = letra;
 }
-char Board::ShowChar()
+char Board::ShowChar() const
 {
 	return board[Cursor.x][Cursor.y];
 }
 
-int Board::BoardMainCoord()
+int Board::CoordLimit() const
 {
 	if (Cursor.dir == 'H')
 		return x;
