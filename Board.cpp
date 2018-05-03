@@ -58,9 +58,8 @@ void Board::getWord()
 	cin >> word;
 	//loop ate palavra ser valida (palavra ou + ou ?)
 	//se = ? (sugerir) , se = - (apagar) 
-	if (Verify(posX, posY, direction, word)) {
+	if (Verify(posX, posY, direction, word))
 		Insert(posX, posY, direction, word);
-	}
 	else cout << "INVALIDO" << endl;
 
 }
