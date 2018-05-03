@@ -43,4 +43,3 @@ Cursor Cursor::operator--(int unused) {
 	}
 	return *this;
 }
-
