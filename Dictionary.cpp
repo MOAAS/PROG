@@ -20,6 +20,7 @@ bool Dictionary::wordExists(string word) const{
 	return false;
 }
 
+// Transfere as palavras e os sinonimos do ficheiro de texto para o dicionario
 void Dictionary::load(string filePath) {
 	string line, keyWord, synonym; // Variaveis auxiliares.
 	ifstream file(filePath);
@@ -40,6 +41,7 @@ void Dictionary::load(string filePath) {
 	}
 }
 
+// Mostra as palavras do dicionario e os seus sinonimos. debug
 void Dictionary::display() const {
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
 		cout << ite->first << ": ";
@@ -49,6 +51,7 @@ void Dictionary::display() const {
 	}
 }
 
+// Recebe uma string com wildcards (wildcardWord). Devolve um vetor com todas as strings que podem ser formadas.
 vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	vector<string> matches;
 	for (auto it : words) {
@@ -60,7 +63,7 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	return matches;
 }
 
-/////
+/////////////////
 
 bool lineValid(string &line) {
 	for (int i = 0; i < line.size(); i++) {
@@ -72,6 +75,8 @@ bool lineValid(string &line) {
 	}
 	return true;
 }
+
+// Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 
 bool wildcardMatch(const char *str, const char *strWild) {
 	while (*strWild) {
