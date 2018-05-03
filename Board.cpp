@@ -120,3 +120,11 @@ int Board::CoordLimit() const
 		return x;
 	else return y;
 }
+
+vector<string> Board::getPlacedWords() const {
+	vector<string> placedWords;
+	for (map<string, string>::const_iterator ite = placedWordsCoords.begin(); ite != placedWordsCoords.end(); i++) {
+		placedWords.push_back(ite->first);
+	}
+	return placedWords;
+}
