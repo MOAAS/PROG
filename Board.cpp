@@ -132,3 +132,64 @@ void Board::InsereVertical(int posX, int posY, string palavra)
 	if (posY<y) //verifica se pode por # depois
 		board[posX][posY] = '#';
 }
+
+///////////////////////////////////////////////////CURSOR///////////////////////////////////////////////////////////
+bool Board::VerificaCursor(int posicaoX, int posicaoY,char direcao, string palavra)
+{
+	Cursor.moveTo(posicaoX, posicaoY, direcao);
+	int tamanho = palavra.length();
+	if (Cursor.maincoord() + tamanho >= boardmaincoord())
+		return false;
+	if (Cursor.maincoord() > 0) //verifica se antes tem letra
+	{
+		Cursor--;
+		if (!(VeCursor() == '#' || VeCursor() == '.'))
+			return false;
+		Cursor++;
+	}
+	for (int i = 0; i < tamanho; i++)
+	{
+		if (!(VeCursor() == palavra[i] || VeCursor() == '.'))
+			return false;
+		Cursor++;
+	}
+	if (Cursor.maincoord() < boardmaincoord()) //verifica se depois tem letra
+		if (!(VeCursor() == '#' || VeCursor() == '.'))
+			return false;
+	return true;
+}
+
+void Board::InsereCursor(int posicaoX, int posicaoY, char direcao, string palavra)
+{
+	Cursor.moveTo(posicaoX, posicaoY, direcao);
+	int tamanho = palavra.length();
+	if (Cursor.maincoord() > 0)
+	{
+		Cursor--;
+		MudaCursor('#');
+		Cursor++;
+	}
+	for (int i = 0; i<tamanho; i++)
+	{
+		MudaCursor(palavra[i]);
+		Cursor++;
+	}
+	if (Cursor.maincoord()<boardmaincoord()) //verifica se pode por # depois
+		MudaCursor('#');
+}
+
+void Board::MudaCursor(char letra)
+{
+	board[Cursor.x][Cursor.y] = letra;
+}
+char Board::VeCursor()
+{
+	return board[Cursor.x][Cursor.y];
+}
+
+int Board::boardmaincoord()
+{
+	if (Cursor.dir == 'H')
+		return x;
+	else return y;
+}
