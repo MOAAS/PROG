@@ -30,7 +30,7 @@ public:
 private:
 	vector<vector<char>> board;
 	int size_x, size_y;
-	map<string, string> placedWordsCoords; // "Palavra", "LCD"
+	map<string, string> placedWordsCoords; // "LCD", "Palavra"
 	Cursor Cursor;
 };
 
