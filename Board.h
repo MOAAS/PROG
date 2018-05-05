@@ -14,7 +14,7 @@ class Board
 {
 public:
 	Board(int size_x, int size_y);
-	void display() const;
+	void display();
 	void getWord();
 	bool Verify(int posX, int posY, char direction, string palavra);
 	bool Verify(string coords, string palavra);//Ve se pode por a palavra
