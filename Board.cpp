@@ -17,11 +17,15 @@ Board::Board(int size_x, int size_y) {
 	this->size_y = size_y;
 }
 
-void Board::display() const {
+void Board::display() {
 	const int N_COLUMNS = size_x;
 	const int N_ROWS = size_y;
 	char letras_cima = 'a'; // Limite superior terá letras minúsculas.
 	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
+
+	clear();
+	InsertAll();
+
 	setcolor(LIGHTRED);
 	cout << "   ";
 	for (int i = 0; i < N_ROWS; i++) {
@@ -67,9 +71,6 @@ void Board::getWord()
 		if (!Verify(input, word))					//if (!Verify(posX, posY, direction, word))
 			cout << "INVALIDO" << endl;
 	}
-	clear();
-	InsertAll();
-
 }
 bool Board::Verify(int posX, int posY, char direction, string word)
 {
