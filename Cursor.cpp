@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Cursor.h"
+#include "Board.h"
 
 Cursor::Cursor() {
 	this->x = 0;
@@ -22,6 +23,12 @@ void Cursor::moveTo(int x, int y, char dir) {
 	this->x = x;
 	this->y = y;
 	this->dir = dir;
+}
+
+void Cursor::moveTo(string coords) {
+	x = LCDtoPosX(coords);
+	y = LCDtoPosY(coords);
+	dir = LCDtoDir(coords);
 }
 
 void Cursor::changeDir(char dir) {
