@@ -49,19 +49,27 @@ void Board::getWord()
 	// '-' e '?'
 	string input;
 	cin >> input; stringUpper(input); input[1] = tolower(input[1]); // Converte todos os carateres para maiusculas menos o segundo.
-	posY = (int)input[0] - (int)'A';
-	posX = (int)input[1] - (int)'a';
-	direction = input[2];
-	//loop ate input ser valido (coordenadas dentro dos limites ou ctrl-z) 
+	//posY = (int)input[0] - (int)'A';
+	//posX = (int)input[1] - (int)'a'; 
+	//direction = input[2];
 
+	//loop ate input ser valido (coordenadas dentro dos limites ou ctrl-z) 
 	string word;
 	cin >> word;
 	stringUpper(word);
-	//loop ate palavra ser valida (palavra ou + ou ?)
-	//se = ? (sugerir) , se = - (apagar) 
-	if (Verify(posX, posY, direction, word))
-		Insert(posX, posY, direction, word);
-	else cout << "INVALIDO" << endl;
+	if (word == "-")
+	{
+		if (!Delete(input))
+			cout << "NAO EXISTE" << endl;
+	}
+	else
+	{
+		if (!Verify(input, word))					//if (!Verify(posX, posY, direction, word))
+			cout << "INVALIDO" << endl;
+	}
+	clear();
+	InsertAll();
+
 }
 bool Board::Verify(int posX, int posY, char direction, string word)
 {
@@ -85,8 +93,37 @@ bool Board::Verify(int posX, int posY, char direction, string word)
 	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
 		if (ShowChar() != '#' && ShowChar() != '.')
 			return false;
+	char LinColDir[4] = { posY + 'A', posX + 'a', direction, '\0' }; // LinColDir é uma string de 3 carateres que indica a linha a coluna e direçao da palavra.
+	placedWordsCoords[LinColDir] = word;
 	return true;
 }
+
+bool Board::Verify(string coords, string word)
+{
+	Cursor.moveTo(coords);
+	int size = word.length();
+	if (Cursor.MainCoord() + size > CoordLimit())
+		return false;
+	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
+	{
+		Cursor--;
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+		Cursor++;
+	}
+	for (int i = 0; i < size; i++)
+	{
+		if (ShowChar() != word[i] && ShowChar() != '.')
+			return false;
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+	placedWordsCoords[coords] = word;
+	return true;
+}
+
 
 void Board::Insert(int posX, int posY, char direction, string word)
 {
@@ -105,8 +142,44 @@ void Board::Insert(int posX, int posY, char direction, string word)
 	}
 	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
 		ChangeChar('#');
-	char LinColDir[4] = { posY + 'A', posX + 'a', direction, '\0' }; // LinColDir é uma string de 3 carateres que indica a linha a coluna e direçao da palavra.
-	placedWordsCoords[LinColDir] = word;
+
+}
+void Board::Insert(string coords, string word)
+{
+	Cursor.moveTo(coords);
+	int size = word.length();
+	if (Cursor.MainCoord() > 0)
+	{
+		Cursor--;
+		ChangeChar('#');
+		Cursor++;
+	}
+	for (int i = 0; i<size; i++)
+	{
+		ChangeChar(word[i]);
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
+		ChangeChar('#');
+
+}
+
+bool Board::Delete(string coords)
+{
+	if (placedWordsCoords.find(coords) == placedWordsCoords.end())
+		return false;
+	else 
+	{
+		placedWordsCoords.erase(coords);
+		return true;
+	}
+}
+
+void Board::InsertAll()
+{
+	for (map<string, string>::iterator it = placedWordsCoords.begin(); it != placedWordsCoords.end(); ++it)
+		Insert(LCDtoPosX(it->first), LCDtoPosY(it->first), LCDtoDir(it->first), it->second);
+		
 }
 
 void Board::ChangeChar(char letra)
@@ -176,11 +249,11 @@ void Board::loadFile(string file_path) {
 			getline(file_orig, line);
 			size_y_file++;
 		}
-		clear(size_x_file, size_y_file);
+		reset(size_x_file, size_y_file);
 		string word, coords; // Coords na forma LCD
 		while (file_orig >> coords) {
 			file_orig >> word;
-			Insert(LCDtoPosX(coords), LCDtoPosY(coords), LCDtoDir(coords), word);
+			placedWordsCoords[coords] = word;
 			// file_orig.clear(); file_orig.ignore(1000, '\n'); // Acho que isto nao e preciso. Deixar estar caso haja problemas relacionados.
 		}
 	}
@@ -189,10 +262,16 @@ void Board::loadFile(string file_path) {
 void Board::clear() {
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
 	board = v;
+}
+
+
+void Board::reset() {
+	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
+	board = v;
 	placedWordsCoords.clear(); // limpa o map
 }
 
-void Board::clear(int new_size_x, int new_size_y) {
+void Board::reset(int new_size_x, int new_size_y) {
 	vector<vector<char>> v(new_size_x, vector<char>(new_size_y, '.'));
 	board = v;
 	this->size_x = new_size_x;
