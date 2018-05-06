@@ -17,6 +17,14 @@ Board::Board(int size_x, int size_y, string dict_file) {
 	this->size_y = size_y;
 }
 
+Board::Board(int size_x, int size_y, Dictionary dict) {
+	this->dict = dict;
+	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
+	board = v;
+	this->size_x = size_x;
+	this->size_y = size_y;
+}
+
 void Board::display() const {
 	const size_t N_COLUMNS = size_x;
 	const size_t N_ROWS = size_y;
