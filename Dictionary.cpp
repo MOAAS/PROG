@@ -11,6 +11,10 @@ Dictionary::Dictionary() {
 
 }
 
+Dictionary::Dictionary(string textFile) {
+	load(textFile);
+}
+
 bool Dictionary::wordExists(string word) const{
 	stringUpper(word);
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
