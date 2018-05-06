@@ -178,7 +178,7 @@ void Board::saveFile(string file_path) {
 }
 
 void Board::loadFile(string file_path) {
-	reset(MAX_SIZE, MAX_SIZE);
+	reset(MAX_SIZE, MAX_SIZE); //
 	ifstream file_orig(file_path); string line;
 	size_t sizeX_file, sizeY_file = 0;
 	if (file_orig.is_open()) {
@@ -196,6 +196,7 @@ void Board::loadFile(string file_path) {
 			getline(file_orig, line);
 		}
 		size_x = sizeX_file; size_y = sizeY_file;
+		shrinkBoard(sizeX_file, sizeY_file);
 		string word, coords; // Coords na forma LcD!
 		while (file_orig >> coords) {
 			file_orig >> word;
@@ -249,10 +250,14 @@ vector<string> Board::getSuggestions(string coords) { // Recebe coordenadas (LcD
 string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD) e o tamanho da palavra e retorna uma string de '?' e letras, dependendo se a casa está preenchida ou nao.
 	string wildcard;
 	Cursor.moveTo(coords);
-	Cursor--; 
-	if (isalpha(ShowChar())) // Se o anterior for uma letra.
-		return "";
-	Cursor++;
+	if (Cursor.MainCoord() > 0) // Se puder "andar para trás"
+	{
+		Cursor--;
+		cout << isalpha(ShowChar());
+		if (isalpha(ShowChar())) // Se o anterior for uma letra.
+			return "";
+		Cursor++;
+	}
 	for (int i = 0; i < size; i++) { // Vê cada carater.
 		if (isalpha(ShowChar()))
 			wildcard.append(1, ShowChar()); // Adiciona a string de retorno o carater.
@@ -260,7 +265,7 @@ string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD
 			wildcard.append("?"); // Adiciona a string de retorno o carater '?'.
 		Cursor++;
 	}
-	if (isalpha(ShowChar())) // Se o carater a seguir ao ultimo for uma letra.
-		return "";
+	if (Cursor.MainCoord() < CoordLimit() && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
+		return ""; // E se o carater a seguir ao ultimo for uma letra.
 	return wildcard;
 }
