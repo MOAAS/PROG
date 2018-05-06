@@ -7,6 +7,7 @@ using namespace std;
 class Dictionary {
 public:
 	Dictionary();
+	Dictionary(string textFile);
 	void load(string textFile);
 	bool wordExists(string word) const;
 	void display() const;
