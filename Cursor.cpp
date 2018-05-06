@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Cursor.h"
-#include "Board.h"
 
 Cursor::Cursor() {
 	this->x = 0;
@@ -56,4 +55,16 @@ int Cursor::MainCoord()
 	if (dir == 'H')
 		return x;
 	else return y;
+}
+
+int LCDtoPosX(string LcD) {
+	return LcD[1] - 'a';
+}
+
+int LCDtoPosY(string LcD) {
+	return LcD[0] - 'A';
+}
+
+char LCDtoDir(string LcD) {
+	return LcD[2];
 }
