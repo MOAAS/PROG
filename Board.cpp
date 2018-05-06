@@ -8,24 +8,20 @@
 #include <string>
 #include <fstream>
 #include "consolecolors.h"
-#include "Dictionary.h"
 
-Board::Board(int size_x, int size_y) {
+Board::Board(int size_x, int size_y, string dict_file) {
+	dict.load(dict_file);
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
 	board = v;
 	this->size_x = size_x;
 	this->size_y = size_y;
 }
 
-void Board::display() {
-	const int N_COLUMNS = size_x;
-	const int N_ROWS = size_y;
+void Board::display() const {
+	const size_t N_COLUMNS = size_x;
+	const size_t N_ROWS = size_y;
 	char letras_cima = 'a'; // Limite superior terá letras minúsculas.
 	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
-
-	clear();
-	InsertAll();
-
 	setcolor(LIGHTRED);
 	cout << "   ";
 	for (int i = 0; i < N_ROWS; i++) {
@@ -47,35 +43,29 @@ void Board::display() {
 
 void Board::getWord()
 {
-	int posX, posY;
-	char direction;
 	//CUIDADOS COM INPUT 
 	// '-' e '?'
-	string input;
-	cin >> input; stringUpper(input); input[1] = tolower(input[1]); // Converte todos os carateres para maiusculas menos o segundo.
-	//posY = (int)input[0] - (int)'A';
-	//posX = (int)input[1] - (int)'a'; 
-	//direction = input[2];
-
-	//loop ate input ser valido (coordenadas dentro dos limites ou ctrl-z) 
-	string word;
-	cin >> word;
-	stringUpper(word);
-	if (word == "-")
+	string input_coords;
+	cin >> input_coords; stringUpper(input_coords); input_coords[1] = tolower(input_coords[1]); // Converte todos os carateres para maiusculas menos o segundo. (Formato LcD).
+	string input_word;
+	cin >> input_word;
+	stringUpper(input_word);
+	if (input_word == "-")
 	{
-		if (!Delete(input))
+		if (!Delete(input_coords)) // Tenta apagar
 			cout << "NAO EXISTE" << endl;
 	}
 	else
 	{
-		if (!Verify(input, word))					//if (!Verify(posX, posY, direction, word))
+		if (!Verify(input_coords, input_word)) // Verifica se e valido
 			cout << "INVALIDO" << endl;
 	}
 }
-bool Board::Verify(int posX, int posY, char direction, string word)
+
+bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
 {
-	Cursor.moveTo(posX, posY, direction);
-	int size = word.length();
+	Cursor.moveTo(coords);
+	size_t size = word.length();
 	if (Cursor.MainCoord() + size > CoordLimit())
 		return false;
 	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
@@ -94,120 +84,66 @@ bool Board::Verify(int posX, int posY, char direction, string word)
 	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
 		if (ShowChar() != '#' && ShowChar() != '.')
 			return false;
-	char LinColDir[4] = { posY + 'A', posX + 'a', direction, '\0' }; // LinColDir é uma string de 3 carateres que indica a linha a coluna e direçao da palavra.
-	placedWordsCoords[LinColDir] = word;
-	return true;
-}
-
-bool Board::Verify(string coords, string word)
-{
-	Cursor.moveTo(coords);
-	int size = word.length();
-	if (Cursor.MainCoord() + size > CoordLimit())
-		return false;
-	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
-	{
-		Cursor--;
-		if (ShowChar() != '#' && ShowChar() != '.')
-			return false;
-		Cursor++;
-	}
-	for (int i = 0; i < size; i++)
-	{
-		if (ShowChar() != word[i] && ShowChar() != '.')
-			return false;
-		Cursor++;
-	}
-	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
-		if (ShowChar() != '#' && ShowChar() != '.')
-			return false;
-	placedWordsCoords[coords] = word;
+	placedWords_Coords[coords] = word; // adiciona ao map
+	RefreshBoard(); // atualiza o board
 	return true;
 }
 
 
-void Board::Insert(int posX, int posY, char direction, string word)
+bool Board::Delete(string coords) // Recebe uma string no formato LcD e apaga a palavra que começa nessa casa.
 {
-	Cursor.moveTo(posX, posY, direction);
-	int size = word.length();
-	if (Cursor.MainCoord() > 0)
-	{
-		Cursor--;
-		ChangeChar('#');
-		Cursor++;
-	}
-	for (int i = 0; i<size; i++)
-	{
-		ChangeChar(word[i]);
-		Cursor++;
-	}
-	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
-		ChangeChar('#');
-
-}
-void Board::Insert(string coords, string word)
-{
-	Cursor.moveTo(coords);
-	int size = word.length();
-	if (Cursor.MainCoord() > 0)
-	{
-		Cursor--;
-		ChangeChar('#');
-		Cursor++;
-	}
-	for (int i = 0; i<size; i++)
-	{
-		ChangeChar(word[i]);
-		Cursor++;
-	}
-	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
-		ChangeChar('#');
-
-}
-
-bool Board::Delete(string coords)
-{
-	if (placedWordsCoords.find(coords) == placedWordsCoords.end())
+	if (placedWords_Coords.find(coords) == placedWords_Coords.end())
 		return false;
-	else 
+	else
 	{
-		placedWordsCoords.erase(coords);
+		placedWords_Coords.erase(coords);
+		RefreshBoard(); // atualiza o board
 		return true;
 	}
 }
 
-void Board::InsertAll()
-{
-	for (map<string, string>::iterator it = placedWordsCoords.begin(); it != placedWordsCoords.end(); ++it)
-		Insert(LCDtoPosX(it->first), LCDtoPosY(it->first), LCDtoDir(it->first), it->second);
-		
+void Board::RefreshBoard() { // Vai ao map, coloca as palavras no tabuleiro
+	clear();
+	for (map<string, string>::iterator it = placedWords_Coords.begin(); it != placedWords_Coords.end(); ++it)
+		Insert_in_board(it->first, it->second);
 }
 
-void Board::ChangeChar(char letra)
+void Board::Insert_in_board(string coords, string word) // Insere word apenas no tabuleiro visual. coords indica onde a palavra começa, no formato LcD. 
+{
+	Cursor.moveTo(coords);
+	size_t size = word.length();
+	if (Cursor.MainCoord() > 0)
+	{
+		Cursor--;
+		ChangeChar('#');
+		Cursor++;
+	}
+	for (int i = 0; i<size; i++)
+	{
+		ChangeChar(word[i]);
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
+		ChangeChar('#');
+}
+
+void Board::ChangeChar(char letra) // Altera o char onde o cursor esta
 {
 	board[Cursor.x][Cursor.y] = letra;
 }
-char Board::ShowChar() const
+char Board::ShowChar() const // Lê o char onde o cursor esta
 {
 	return board[Cursor.x][Cursor.y];
 }
 
-int Board::CoordLimit() const
+size_t Board::CoordLimit() const 
 {
 	if (Cursor.dir == 'H')
 		return size_x;
 	else return size_y;
 }
 
-vector<string> Board::getPlacedWords() const {
-	vector<string> placedWords;
-	for (map<string, string>::const_iterator ite = placedWordsCoords.begin(); ite != placedWordsCoords.end(); ite++) {
-		placedWords.push_back(ite->second);
-	}
-	return placedWords;
-}
-
-bool Board::isFull() const
+bool Board::isFull() const // Verifica se o tabuleiro encheu
 {
 	for (int i = 0; i < size_x; i++)
 	{
@@ -218,7 +154,7 @@ bool Board::isFull() const
 	return true;
 }
 
-void Board::Fill()
+void Board::Fill() // Enche as casas vazias com '#'
 {
 	for (int i = 0; i < size_x; i++)
 	{
@@ -230,65 +166,101 @@ void Board::Fill()
 
 void Board::saveFile(string file_path) {
 	ofstream file_dest(file_path);
+	file_dest << file_path << endl << endl; // file_path no topo
 	for (int i = 0; i < size_x; i++) {
 		for (int j = 0; j < size_y; j++)
 			file_dest << board[j][i] << ' ';
 		file_dest << endl;
 	}
-	file_dest << endl << "WORD COORDINATES:" << endl;
-	for (map<string, string>::const_iterator ite = placedWordsCoords.begin(); ite != placedWordsCoords.end(); ite++)
+	file_dest << endl;
+	for (map<string, string>::const_iterator ite = placedWords_Coords.begin(); ite != placedWords_Coords.end(); ite++)
 		file_dest << ite->first << " " << ite->second << endl;
 }
 
 void Board::loadFile(string file_path) {
+	reset(MAX_SIZE, MAX_SIZE);
 	ifstream file_orig(file_path); string line;
-	int size_x_file, size_y_file = -1; // Começa a -1 pois a linha extra abaixo do board incrementa o tamanho em 1 a mais.
+	size_t sizeX_file, sizeY_file = 0;
 	if (file_orig.is_open()) {
-		getline(file_orig, line);
-		size_x_file = line.size() / 2; // 
-		while (line != "WORD COORDINATES:") {
+		getline(file_orig, line); // tira o nome do ficheiro.
+		getline(file_orig, line); // tira a newline.
+		getline(file_orig, line); // tira a primeira linha do tabuleiro.
+		for (int i = 0; line != ""; i++) {
+			sizeX_file = line.size() / 2; // Vai determinar o tamanho do tabuleiro no ficheiro.
+			Cursor.moveTo(0, i);
+			for (int j = 0; j < line.size(); j = j + 2) {
+				ChangeChar(line[j]);
+				Cursor++;
+			}
+			sizeY_file++;
 			getline(file_orig, line);
-			size_y_file++;
 		}
-		reset(size_x_file, size_y_file);
-		string word, coords; // Coords na forma LCD
+		size_x = sizeX_file; size_y = sizeY_file;
+		string word, coords; // Coords na forma LcD!
 		while (file_orig >> coords) {
 			file_orig >> word;
-			placedWordsCoords[coords] = word;
+			placedWords_Coords[coords] = word;
 			// file_orig.clear(); file_orig.ignore(1000, '\n'); // Acho que isto nao e preciso. Deixar estar caso haja problemas relacionados.
 		}
 	}
+	else
+		cout << "File could not be opened." << endl;
 }
 
-void Board::clear() {
+void Board::shrinkBoard(size_t newSize_x, size_t newSize_y) {
+	board.resize(newSize_x);
+	for (int i = 0; i < board.size(); i++) {
+		board[i].resize(newSize_y);
+	}
+}
+
+void Board::clear() { // Apenas limpa o Board, nao altera o map com as palavras.
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
 	board = v;
 }
 
 
-void Board::reset() {
+void Board::reset() {  // Reinicia o board (Apaga o tabuleiro e o conteudo do map)
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
 	board = v;
-	placedWordsCoords.clear(); // limpa o map
+	placedWords_Coords.clear(); // Limpa o map
 }
 
-void Board::reset(int new_size_x, int new_size_y) {
-	vector<vector<char>> v(new_size_x, vector<char>(new_size_y, '.'));
+void Board::reset(size_t newSize_x, size_t newSize_y) { // Reinicia o board com um novo tamanho
+	vector<vector<char>> v(newSize_x, vector<char>(newSize_y, '.'));
 	board = v;
-	this->size_x = new_size_x;
-	this->size_y = new_size_y;
-	placedWordsCoords.clear(); // limpa o map
+	this->size_x = newSize_x;
+	this->size_y = newSize_y;
+	placedWords_Coords.clear(); // Limpa o map
 }
 
-
-int LCDtoPosX(string LCD) {
-	return LCD[1] - 'a';
+vector<string> Board::getSuggestions(string coords) { // Recebe coordenadas (LcD) e devolve todas as possibilidades para essa casa.
+	vector<string> suggestions;
+	Cursor.moveTo(coords);
+	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
+	for (int i = Cursor.MainCoord(); i < CoordLimit(); i++) {
+		vector<string> wildcards = dict.getWildcardMatches(getWildcard(coords, wordSize)); // recebe as wildcards associadas ao wordSize atual, com as coordenadas fornecidas.
+		suggestions.insert(suggestions.end(), wildcards.begin(), wildcards.end()); // Insere essas wildcards no vetor.
+		wordSize++; 
+	}
+	return suggestions;
 }
 
-int LCDtoPosY(string LCD) {
-	return LCD[0] - 'A';
-}
-
-char LCDtoDir(string LCD) {
-	return LCD[2];
+string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD) e o tamanho da palavra e retorna uma string de '?' e letras, dependendo se a casa está preenchida ou nao.
+	string wildcard;
+	Cursor.moveTo(coords);
+	Cursor--; 
+	if (isalpha(ShowChar())) // Se o anterior for uma letra.
+		return "";
+	Cursor++;
+	for (int i = 0; i < size; i++) { // Vê cada carater.
+		if (isalpha(ShowChar()))
+			wildcard.append(1, ShowChar()); // Adiciona a string de retorno o carater.
+		else
+			wildcard.append("?"); // Adiciona a string de retorno o carater '?'.
+		Cursor++;
+	}
+	if (isalpha(ShowChar())) // Se o carater a seguir ao ultimo for uma letra.
+		return "";
+	return wildcard;
 }
