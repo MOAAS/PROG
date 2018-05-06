@@ -13,6 +13,7 @@ class Board
 {
 public:
 	Board(int size_x, int size_y, string dict_file);
+	Board(int size_x, int size_y, Dictionary dict);
 	void display() const;
 	void getWord();
 	bool Verify(string coords, string palavra);//Ve se pode por a palavra
