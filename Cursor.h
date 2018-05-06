@@ -19,3 +19,7 @@ private:
 	int x, y;
 	char dir; // Direção. H / V
 };
+
+int LCDtoPosX(string LCD); // recebe string da forma "LinhaColunaDireçao" devolve a coordenada X correspondente.
+int LCDtoPosY(string LCD); // recebe string da forma "LinhaColunaDireçao" devolve a coordenada Y correspondente.
+char LCDtoDir(string LCD); // recebe string da forma "LinhaColunaDireçao" devolve a direçao correspondente.
