@@ -60,23 +60,23 @@ void Board::Menu()
 	if (input_word == "-")
 	{
 		if (!Delete(input_coords)) // Tenta apagar
-			cout << "Nenhuma palavra tem inicio nessas coordenadas" << endl;
+			cout << "No words start in that position" << endl;
 	}
 	else 
 	if (input_word == "?")
 		{
 			vector<string> sugestoes = getSuggestions(input_coords);
 			 if (sugestoes.empty())
-			cout << "Nenhuma palavra encontrada" << endl;
+			cout << "No words found in the dictionary" << endl;
 			 else
 			 {
-				 cout << "Palavras sugeridas: ";
+				 cout << "Sugested Words: ";
 				 ShowVector(sugestoes);
 			 }
 		}
 		else
 			if (!Verify(input_coords, input_word)) // Verifica se e valido e adiciona ao map de palavras
-				cout << "Nao e possivel inserir palavra " << endl;
+				cout << "Word does not fit in the board" << endl;
 }
 string Board::inputCoords()
 {
@@ -84,15 +84,23 @@ string Board::inputCoords()
 	bool validCoords;
 	do {
 		validCoords = true;
-		cout << "Coordendas? (CTRL-Z p/guardar) ";
+		cout << "Position ( LCD / CTRL-Z = stop )  ? ";
 		cin >> input_coords;
 		if (cin.eof()) //CTRL-Z
 		{
-			saveFile("ola.txt");
-			cout << "Guardado com sucesso" << endl;
+			cin.clear(); //NAO FUNCIONA SEM ISTO IDK WHY
+			char decision;
+			cout << "Save board? (y/n) "; 
+			cin >> decision;
+			toupper(decision);
+			if (decision == 'Y')
+			{
+				saveFile("ola.txt");  //coisa com os numeros que eu nao sei !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				cout << "Board Saved." << endl;
+			}
 			exit(0);
 		}
-		if (cin.fail()) //CASO NAO SEJA STRING
+		if (cin.fail()) //input invalido
 		{
 			cin.clear();
 			validCoords = false;
@@ -107,7 +115,7 @@ string Board::inputCoords()
 				validCoords = false;
 		}
 		if (!validCoords)
-			cout << "Coordenadas Invalidas" << endl;
+			cout << "Invalid Position" << endl;
 		cin.ignore(1000, '\n');
 	} while (!validCoords);
 	return input_coords;
@@ -120,21 +128,21 @@ string Board::inputWord()
 	do
 	{
 		validWord = true;
-		cout << "Palavra? (-)(?) ";
+		cout << "Word ( - = remove / ? = help )    ? ";
 		cin >> input_word;
-		if (cin.fail()) //INPUT INVALIDO
+		if (cin.fail()) //input invalido
 		{
 			cin.clear();
 			cin.ignore(1000, '/n');
 			validWord = false;
-			cout << "Input invalido" << endl;
+			cout << "Invalid Input" << endl;
 		}
 		else
 		{
 			stringUpper(input_word);
-			if (!dict.wordExists(input_word)) //EXISTE NO DICIONARIO?
+			if (!dict.wordExists(input_word) && input_word != "-" && input_word != "?") //EXISTE NO DICIONARIO?
 			{
-				cout << "Palavra nao existe no dicionario" << endl;
+				cout << "Word does not exist in the dictionary" << endl;
 				validWord = false;
 			}
 		}
