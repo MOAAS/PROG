@@ -15,7 +15,9 @@ public:
 	Board(int size_x, int size_y, string dict_file);
 	Board(int size_x, int size_y, Dictionary dict);
 	void display() const;
-	void getWord();
+	void Menu();
+	string inputCoords();
+	string inputWord();
 	bool Verify(string coords, string palavra);//Ve se pode por a palavra
 	void Insert_in_board(string coords, string palavra);//mete
 	void RefreshBoard();
@@ -38,6 +40,9 @@ private:
 	size_t size_x, size_y;
 	map<string, string> placedWords_Coords; // ["LCD", "Palavra"]. É aqui que a informação realmente está.
 	Cursor Cursor;
+	Dictionary dict;
+	static const size_t MAX_SIZE = 20;
+};
 	Dictionary dict;
 	static const size_t MAX_SIZE = 20;
 };
