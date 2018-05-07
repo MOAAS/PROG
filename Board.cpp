@@ -9,6 +9,8 @@
 #include <fstream>
 #include "consolecolors.h"
 
+void ShowVector(vector<string> v);
+
 Board::Board(int size_x, int size_y, string dict_file) {
 	dict.load(dict_file);
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
@@ -49,25 +51,96 @@ void Board::display() const {
 	setcolor(WHITE);
 }
 
-void Board::getWord()
+void Board::Menu()
 {
-	//CUIDADOS COM INPUT 
-	// '-' e '?'
 	string input_coords;
-	cin >> input_coords; stringUpper(input_coords); input_coords[1] = tolower(input_coords[1]); // Converte todos os carateres para maiusculas menos o segundo. (Formato LcD).
 	string input_word;
-	cin >> input_word;
-	stringUpper(input_word);
+	input_coords = inputCoords();
+	input_word = inputWord();
 	if (input_word == "-")
 	{
 		if (!Delete(input_coords)) // Tenta apagar
-			cout << "NAO EXISTE" << endl;
+			cout << "Nenhuma palavra tem inicio nessas coordenadas" << endl;
 	}
-	else
+	else 
+	if (input_word == "?")
+		{
+			vector<string> sugestoes = getSuggestions(input_coords);
+			 if (sugestoes.empty())
+			cout << "Nenhuma palavra encontrada" << endl;
+			 else
+			 {
+				 cout << "Palavras sugeridas: ";
+				 ShowVector(sugestoes);
+			 }
+		}
+		else
+			if (!Verify(input_coords, input_word)) // Verifica se e valido e adiciona ao map de palavras
+				cout << "Nao e possivel inserir palavra " << endl;
+}
+string Board::inputCoords()
+{
+	string input_coords;
+	bool validCoords;
+	do {
+		validCoords = true;
+		cout << "Coordendas? (CTRL-Z p/guardar) ";
+		cin >> input_coords;
+		if (cin.eof()) //CTRL-Z
+		{
+			saveFile("ola.txt");
+			cout << "Guardado com sucesso" << endl;
+			exit(0);
+		}
+		if (cin.fail()) //CASO NAO SEJA STRING
+		{
+			cin.clear();
+			validCoords = false;
+		}
+		else
+		{
+			stringUpper(input_coords); input_coords[1] = tolower(input_coords[1]); // Converte todos os carateres para maiusculas menos o segundo. (Formato LcD).
+			if (input_coords.size() != 3)
+				validCoords = false;
+			else 
+				if(!(input_coords[0]>='A' && (int)input_coords[0] - 'A' < size_x && input_coords[1] >= 'a' && (int)(input_coords[1]) - 'a' < size_y && (input_coords[2] == 'H'|| input_coords[2] == 'V'))) //verifica se esta dentro dos limites 
+				validCoords = false;
+		}
+		if (!validCoords)
+			cout << "Coordenadas Invalidas" << endl;
+		cin.ignore(1000, '\n');
+	} while (!validCoords);
+	return input_coords;
+}
+
+string Board::inputWord()
+{
+	string input_word;
+	bool validWord;
+	do
 	{
-		if (!Verify(input_coords, input_word)) // Verifica se e valido
-			cout << "INVALIDO" << endl;
-	}
+		validWord = true;
+		cout << "Palavra? (-)(?) ";
+		cin >> input_word;
+		if (cin.fail()) //INPUT INVALIDO
+		{
+			cin.clear();
+			cin.ignore(1000, '/n');
+			validWord = false;
+			cout << "Input invalido" << endl;
+		}
+		else
+		{
+			stringUpper(input_word);
+			if (!dict.wordExists(input_word)) //EXISTE NO DICIONARIO?
+			{
+				cout << "Palavra nao existe no dicionario" << endl;
+				validWord = false;
+			}
+		}
+		cin.ignore(1000, '\n');
+	} while (!validWord);
+	return input_word;
 }
 
 bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
@@ -144,7 +217,7 @@ char Board::ShowChar() const // Lê o char onde o cursor esta
 	return board[Cursor.x][Cursor.y];
 }
 
-size_t Board::CoordLimit() const 
+size_t Board::CoordLimit() const
 {
 	if (Cursor.dir == 'H')
 		return size_x;
@@ -250,7 +323,7 @@ vector<string> Board::getSuggestions(string coords) { // Recebe coordenadas (LcD
 	for (int i = Cursor.MainCoord(); i < CoordLimit(); i++) {
 		vector<string> wildcards = dict.getWildcardMatches(getWildcard(coords, wordSize)); // recebe as wildcards associadas ao wordSize atual, com as coordenadas fornecidas.
 		suggestions.insert(suggestions.end(), wildcards.begin(), wildcards.end()); // Insere essas wildcards no vetor.
-		wordSize++; 
+		wordSize++;
 	}
 	return suggestions;
 }
@@ -276,4 +349,11 @@ string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD
 	if (Cursor.MainCoord() < CoordLimit() && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
 		return ""; // E se o carater a seguir ao ultimo for uma letra.
 	return wildcard;
+}
+
+void ShowVector(vector<string> v)
+{
+	for (int i = 0; i < v.size(); i++)
+		cout << v[i] << "  ";
+	cout << endl;
 }
