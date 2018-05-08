@@ -43,6 +43,3 @@ private:
 	Dictionary dict;
 	static const size_t MAX_SIZE = 20;
 };
-	Dictionary dict;
-	static const size_t MAX_SIZE = 20;
-};
