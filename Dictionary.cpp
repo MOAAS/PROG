@@ -11,6 +11,10 @@ Dictionary::Dictionary() {
 
 }
 
+Dictionary::Dictionary(string textFile) {
+	load(textFile);
+}
+
 bool Dictionary::wordExists(string word) const{
 	stringUpper(word);
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
@@ -52,6 +56,7 @@ void Dictionary::display() const {
 }
 
 // Recebe uma string com wildcards (wildcardWord). Devolve um vetor com todas as strings que podem ser formadas.
+
 vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	vector<string> matches;
 	for (auto it : words) {
@@ -62,8 +67,6 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	}
 	return matches;
 }
-
-
 // Se a palavra não existir, devolve uma string vazia.
 string Dictionary::getRandomSynonym(string word) const {
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
@@ -76,8 +79,6 @@ string Dictionary::getRandomSynonym(string word) const {
 	return "";
 }
 
-
-
 bool lineValid(string &line) { // Remove ':' e ';' de line. Retorna falso se a linha não for válida.
 	for (int i = 0; i < line.size(); i++) {
 		if (line[i] == ':' || line[i] == ',') {
@@ -88,7 +89,6 @@ bool lineValid(string &line) { // Remove ':' e ';' de line. Retorna falso se a l
 	}
 	return true;
 }
-
 
 // Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 
@@ -108,12 +108,13 @@ bool wildcardMatch(const char *str, const char *strWild) {
 			return false;
 		}
 		else {
+			if (toupper(*str++) != toupper(*strWild++))
 				return false;
 		}
 	}
+	// Have a match? Only if both are at the end...
 	return !*str && !*strWild;
 }
-
 
 void stringUpper(string &input) { // Converte uma string para upper case. Passada por referencia.
 	transform(input.begin(), input.end(), input.begin(), ::toupper);

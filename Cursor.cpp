@@ -24,6 +24,12 @@ void Cursor::moveTo(int x, int y, char dir) {
 	this->dir = dir;
 }
 
+void Cursor::moveTo(string coords) {
+	x = LCDtoPosX(coords);
+	y = LCDtoPosY(coords);
+	dir = LCDtoDir(coords);
+}
+
 void Cursor::changeDir(char dir) {
 	this->dir = dir;
 }
@@ -49,4 +55,16 @@ int Cursor::MainCoord()
 	if (dir == 'H')
 		return x;
 	else return y;
+}
+
+int LCDtoPosX(string LcD) {
+	return LcD[1] - 'a';
+}
+
+int LCDtoPosY(string LcD) {
+	return LcD[0] - 'A';
+}
+
+char LCDtoDir(string LcD) {
+	return LcD[2];
 }
