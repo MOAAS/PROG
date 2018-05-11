@@ -74,11 +74,13 @@ bool Board::Verify(string coords, string word) // Verifica se word cabe nas coor
     if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
         if (ShowChar() != '#' && ShowChar() != '.')
             return false;
-    placedWords_Coords[coords] = word; // adiciona ao map
-    RefreshBoard(); // atualiza o board
     return true;
 }
 
+void Board::Insert(string word, string coords) {
+    placedWords_Coords[coords] = word; // adiciona ao map
+    RefreshBoard(); // atualiza o board
+}
 
 bool Board::Delete(string coords) // Recebe uma string no formato LcD e apaga a palavra que começa nessa casa.
 {
@@ -253,7 +255,9 @@ string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD
 	}
 	if (Cursor.MainCoord() < CoordLimit() && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
 		return ""; // E se o carater a seguir ao ultimo for uma letra.
-	return wildcard;
+	if (getWord(coords) == wildcard)
+		return "";
+	else return wildcard;
 }
 
 bool Board::validCoords(string &coords) {
@@ -280,6 +284,81 @@ bool Board::hasWord(string word) const {
 	return false;
 }
 
+bool Board::extraWords(Dictionary dict) {
+	map<string, string> invalidWords;
+	map<string, string> validWords;
+	bool gettingWord = false;
+	string extraWord;
+	string extraWordCoords;
+	string CoordsLCD;
+	for (int i = 0; i<size_x; i++) {
+		for (int j = 0; j < size_y; j++) {
+			CoordsLCD = { (char)(j + 'A'), (char)(i + 'a'), 'V' };
+			if (gettingWord) {  //ve se esta a meio de uma palavra
+				if (board[i][j] == '#' || board[i][j] == '.' || j == 0) { //palavra ja acabou?
+					if (extraWord.size() > 1) {	//evita quando e so uma letra				
+						if (dict.wordExists(extraWord))
+							validWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras validas
+						else invalidWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras invalidas
+					}
+					if (j == 0)	j--;
+					gettingWord = false;
+				}
+				else extraWord += board[i][j]; // adiciona letra nova a palavra
+			}
+			else if (isalpha(board[i][j])) {//quando nao esta a meio da formacao de uma palavra. verifica se e uma letra
+				if (placedWords_Coords.find(CoordsLCD) == placedWords_Coords.end()) { // se nao for o inicio de uma palavra do map  
+					extraWord = board[i][j];                                          // de palavras , comeca uma nova palavra
+					extraWordCoords = CoordsLCD;
+					gettingWord = true;
+				}
+				else j += placedWords_Coords[CoordsLCD].size();	 //se for o inicio de uma palavra do map
+			}
+		}
+	}
+	//A MESMA COISA MAS HORIZONTAL
+    for (int i = 0; i<size_y; i++) { //Diferenca (size_y)
+        for (int j = 0; j < size_x; j++) {   //Diferenca (size_x)
+            CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' }; // Diferenca (i,j,H)
+            if (gettingWord) {
+				if (board[j][i] == '#' || board[j][i] == '.' || j == 0) {  // Diferenca (j,i)
+                    if (extraWord.size() > 1) {
+                        if (dict.wordExists(extraWord))
+                            validWords[extraWordCoords] = extraWord;
+                        else invalidWords[extraWordCoords] = extraWord;
+                    }
+					if (j == 0)	j--;
+                    gettingWord = false;
+                }
+                else extraWord += board[j][i]; // Diferenca (j,i)
+            }
+            else if (isalpha(board[j][i])) {//verifica se e uma letra
+				if (placedWords_Coords.find(CoordsLCD) == placedWords_Coords.end()) {
+					extraWord = board[j][i];
+					extraWordCoords = CoordsLCD;
+					gettingWord = true;
+				}
+				else j += placedWords_Coords[CoordsLCD].size();
+			}
+		}
+	}
+	if (validWords.size() > 0) { //mostra as palavras novas validas
+		cout << "New Words:" << '\n';
+		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
+			cout << it->first << " " << it->second << "\n";
+	}
+	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
+		cout << "Invalid words:" << '\n';
+		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
+			cout << it->first << " " << it->second << "\n";
+		return false;  //se existirem palavra invalidas
+	}
+	else { //se nao existirem palavra invalidas
+		placedWords_Coords.insert(validWords.begin(), validWords.end()); //Adiciona ao map de palavras as novas(DEVERIA ADICIONA A MESMA SE HOUVESSE INVALIDAS???)
+		return true;
+	}
+}
+
 int find_BoardNumber() {
 	// Para determinar o número de tabuleiros.
 	size_t numBoards = 0;
@@ -295,3 +374,4 @@ int find_BoardNumber() {
 	} while (f.good());
 	return numBoards;
 }
+
