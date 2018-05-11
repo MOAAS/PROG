@@ -23,7 +23,7 @@ pair<Board, Dictionary> resumePuzzle();
 string getInput_Coords(Board b1, Dictionary d1);
 string getInput_Word(Board b1, Dictionary d1);
 
-int boardBuilding(Board &b1, Dictionary d1);
+string boardBuilding(Board &b1, Dictionary d1);
 
 void delete_at(string coords, Board &b1);
 void displaySuggestions(Board b1, Dictionary d1, string coords);
@@ -49,57 +49,47 @@ int main() {
 			Puzzle = resumePuzzle();
 		b1 = Puzzle.first;
 		d1 = Puzzle.second;
-		int code;
+		string code;
 		do {
 			code = boardBuilding(b1, d1);
-			if (code == -1)
+			if (code == "INVALID") {
+				b1.RefreshBoard(); // Equivalente a um unfill. (Tira os '#' postos no fim).
 				cout << "The board still has some invalid words, it cannot be finished until those are removed." << endl;
-		} while (code == -1);
-		if (code) { // = 1, ou seja está bom!
-			string newBoard_path = b1.saveFile(d1.filePath);
-			cout << "The board is finished!" << endl;
-			cout << "Board Saved, as " << newBoard_path << ".\n";
-			if (restartCreator()) {
-				clrscr();
-				return 0;
 			}
-		}
-		else { // = 0, ou seja tem de se recomeçar.
+		} while (code == "INVALID");
+		string newBoard_path = b1.saveFile(d1.filePath);
+		cout << "Board saved, as " << newBoard_path << ".\n";
+		if (restartCreator()) {
 			clrscr();
 			continue;
 		}
 	}
 }
 
-int boardBuilding(Board &b1, Dictionary d1) {
-	bool user_isDone = false;
+string boardBuilding(Board &b1, Dictionary d1) {
 	while (!b1.isFull()) {
-		string input_coords = getInput_Coords(b1, d1); // devolve string vazia caso haja Ctrl+Z
-		if (input_coords == "") {
-			user_isDone = true;
-			break;
+		string input_coords = getInput_Coords(b1, d1);
+		if (input_coords == "SAVE")
+			return "VALID";
+		else if (input_coords == "FINISH") {
+			b1.Fill();
+			break; // Agora vai verificar se hÃ¡ palavras extra.
 		}
 		string input_word = getInput_Word(b1, d1);
 		if (input_word == "-")
 			delete_at(input_coords, b1);
 		else if (input_word == "?")
 			displaySuggestions(b1, d1, input_coords);
-		else
-			insert_at(input_coords, input_word, b1);
+		else insert_at(input_coords, input_word, b1);
 		cout << endl;
 	}
-	if (user_isDone) {
-		if (restartCreator()) {
-			clrscr();
-			return 0;
-		}
-		else exit(EXIT_SUCCESS);
+	if (b1.extraWords(d1)) {
+		cout << "The board is finished!" << endl;
+		return "VALID";
 	}
-	/*else if (b1.extraWords()) // tambem altera b1.
-		return 1; // Está bom!
-	else
-		return -1; // Tem palavras invalidas*/
-	return 1;
+	else {
+		return "INVALID";
+	}
 }
 
 string displayInstructions() {
@@ -173,14 +163,10 @@ string getInput_Coords(Board b1, Dictionary d1) {
 				cout << "Save board to resume later (S) or finish creation (F) ? ";
 				cin >> decision; cin.clear(); cin.ignore(10000, '\n');
 				decision = toupper(decision);
-				if (decision == 'F') {
-					cout << "Creation is finished. ";
-					b1.Fill();
-				}
+				if (decision == 'F')
+					return "FINISH";
 			} while (decision != 'S' && decision != 'F');
-			string newBoard_path = b1.saveFile(d1.filePath);
-			cout << "Board Saved, as " << newBoard_path << ".\n";
-			return "";
+			return "SAVE";
 		}
 		else if (!b1.validCoords(input_coords)) // se forem validas tambem converte o necessario para minusculas e maiusculas.
 			validCoords = false;
@@ -203,7 +189,7 @@ string getInput_Word(Board b1, Dictionary d1) {
 			cout << "The word " << input_word << " does not exist in the dictionary!" << endl;
 			validWord = false;
 		}
-		else if (d1.wordExists(input_word) && !b1.hasWord(input_word)) {
+		else if (d1.wordExists(input_word) && b1.hasWord(input_word)) {
 			cout << "The word " << input_word << " is already in the board!" << endl;
 			validWord = false;
 		}			
@@ -235,7 +221,7 @@ void delete_at(string coords, Board &b1) {
 void displaySuggestions(Board b1, Dictionary d1, string coords) {
 	vector<string> sugestoes;
 	Cursor c1; c1.moveTo(coords);
-	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
+	int wordSize = 1; // wordSize vai de 1 atÃ© ao limite do tabuleiro.
 	cout << "Fecthing suggested words..." << endl;
 	for (int i = c1.MainCoord(); i < b1.CoordLimit(); i++) {
 		string wildcard = b1.getWildcard(coords, wordSize);
