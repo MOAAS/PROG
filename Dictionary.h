@@ -7,12 +7,13 @@ using namespace std;
 class Dictionary {
 public:
 	Dictionary();
-	Dictionary(string textFile);
+	Dictionary(string textFile); 
 	void load(string textFile);
 	bool wordExists(string word) const;
 	void display() const;
 	vector<string> getWildcardMatches(string wildcardWord) const;
 	string getRandomSynonym(string word) const;
+	string filePath;
 private:
 	map<string, vector<string>> words;
 };
