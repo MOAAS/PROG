@@ -7,25 +7,24 @@
 #include <windows.h>
 #include <string>
 #include <fstream>
-#include <sstream>
-#include <iomanip>
 #include "consolecolors.h"
 
-Board::Board() {
-	size_x = MAX_SIZE;
-	size_y = MAX_SIZE;
-	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
-	board = v;
-	this->boardNumber = find_BoardNumber();
-}
+void ShowVector(vector<string> v);
 
-
-Board::Board(int size_x, int size_y) {
+Board::Board(int size_x, int size_y, string dict_file) {
+	dict.load(dict_file);
 	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
 	board = v;
 	this->size_x = size_x;
 	this->size_y = size_y;
-	this->boardNumber = find_BoardNumber();
+}
+
+Board::Board(int size_x, int size_y, Dictionary dict) {
+	this->dict = dict;
+	vector<vector<char>> v(size_x, vector<char>(size_y, '.'));
+	board = v;
+	this->size_x = size_x;
+	this->size_y = size_y;
 }
 
 void Board::display() const {
@@ -35,16 +34,16 @@ void Board::display() const {
 	char letras_lado = 'A'; // Limite inferior terá letras maiúsculas
 	setcolor(LIGHTRED);
 	cout << "   ";
-	for (int i = 0; i < N_COLUMNS; i++) {
+	for (int i = 0; i < N_ROWS; i++) {
 		cout << letras_cima << ' ';
 		letras_cima++;
 	}
 	cout << endl;
-	for (int i = 0; i < N_ROWS; i++) {
+	for (int i = 0; i < N_COLUMNS; i++) {
 		cout << letras_lado << "  ";
 		setcolor(BLACK, WHITE);
 		letras_lado++;
-		for (int j = 0; j < N_COLUMNS; j++)
+		for (int j = 0; j < N_ROWS; j++)
 			cout << board[j][i] << ' ';
 		setcolor(LIGHTRED);
 		cout << endl;
@@ -52,35 +51,133 @@ void Board::display() const {
 	setcolor(WHITE);
 }
 
-bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
+void Board::Menu()
 {
-    Cursor.moveTo(coords);
-    size_t size = word.length();
-    if (Cursor.MainCoord() + size > CoordLimit())
-        return false;
-    if (Cursor.MainCoord() > 0) //verifica se antes tem letra
-    {
-        Cursor--;
-        if (ShowChar() != '#' && ShowChar() != '.')
-            return false;
-        Cursor++;
-    }
-    for (int i = 0; i < size; i++)
-    {
-        if (ShowChar() != word[i] && ShowChar() != '.')
-            return false;
-        Cursor++;
-    }
-    if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
-        if (ShowChar() != '#' && ShowChar() != '.')
-            return false;
-    return true;
+	string input_coords;
+	string input_word;
+	input_coords = inputCoords();
+	input_word = inputWord();
+	if (input_word == "-")
+	{
+		if (!Delete(input_coords)) // Tenta apagar
+			cout << "No words start in that position" << endl;
+	}
+	else 
+	if (input_word == "?")
+		{
+			vector<string> sugestoes = getSuggestions(input_coords);
+			 if (sugestoes.empty())
+			cout << "No words found in the dictionary" << endl;
+			 else
+			 {
+				 cout << "Sugested Words: ";
+				 ShowVector(sugestoes);
+			 }
+		}
+		else
+			if (!Verify(input_coords, input_word)) // Verifica se e valido e adiciona ao map de palavras
+				cout << "Word does not fit in the board" << endl;
+}
+string Board::inputCoords()
+{
+	string input_coords;
+	bool validCoords;
+	do {
+		validCoords = true;
+		cout << "Position ( LCD / CTRL-Z = stop )  ? ";
+		cin >> input_coords;
+		if (cin.eof()) //CTRL-Z
+		{
+			cin.clear(); //NAO FUNCIONA SEM ISTO IDK WHY
+			char decision;
+			cout << "Save board? (y/n) "; 
+			cin >> decision;
+			toupper(decision);
+			if (decision == 'Y')
+			{
+				saveFile("ola.txt");  //coisa com os numeros que eu nao sei !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				cout << "Board Saved." << endl;
+			}
+			exit(0);
+		}
+		if (cin.fail()) //input invalido
+		{
+			cin.clear();
+			validCoords = false;
+		}
+		else
+		{
+			stringUpper(input_coords); input_coords[1] = tolower(input_coords[1]); // Converte todos os carateres para maiusculas menos o segundo. (Formato LcD).
+			if (input_coords.size() != 3)
+				validCoords = false;
+			else 
+				if(!(input_coords[0]>='A' && (int)input_coords[0] - 'A' < size_x && input_coords[1] >= 'a' && (int)(input_coords[1]) - 'a' < size_y && (input_coords[2] == 'H'|| input_coords[2] == 'V'))) //verifica se esta dentro dos limites 
+				validCoords = false;
+		}
+		if (!validCoords)
+			cout << "Invalid Position" << endl;
+		cin.ignore(1000, '\n');
+	} while (!validCoords);
+	return input_coords;
 }
 
-void Board::Insert(string word, string coords) {
-    placedWords_Coords[coords] = word; // adiciona ao map
-    RefreshBoard(); // atualiza o board
+string Board::inputWord()
+{
+	string input_word;
+	bool validWord;
+	do
+	{
+		validWord = true;
+		cout << "Word ( - = remove / ? = help )    ? ";
+		cin >> input_word;
+		if (cin.fail()) //input invalido
+		{
+			cin.clear();
+			cin.ignore(1000, '/n');
+			validWord = false;
+			cout << "Invalid Input" << endl;
+		}
+		else
+		{
+			stringUpper(input_word);
+			if (!dict.wordExists(input_word) && input_word != "-" && input_word != "?") //EXISTE NO DICIONARIO?
+			{
+				cout << "Word does not exist in the dictionary" << endl;
+				validWord = false;
+			}
+		}
+		cin.ignore(1000, '\n');
+	} while (!validWord);
+	return input_word;
 }
+
+bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
+{
+	Cursor.moveTo(coords);
+	size_t size = word.length();
+	if (Cursor.MainCoord() + size > CoordLimit())
+		return false;
+	if (Cursor.MainCoord() > 0) //verifica se antes tem letra
+	{
+		Cursor--;
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+		Cursor++;
+	}
+	for (int i = 0; i < size; i++)
+	{
+		if (ShowChar() != word[i] && ShowChar() != '.')
+			return false;
+		Cursor++;
+	}
+	if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+	placedWords_Coords[coords] = word; // adiciona ao map
+	RefreshBoard(); // atualiza o board
+	return true;
+}
+
 
 bool Board::Delete(string coords) // Recebe uma string no formato LcD e apaga a palavra que começa nessa casa.
 {
@@ -123,7 +220,6 @@ void Board::ChangeChar(char letra) // Altera o char onde o cursor esta
 {
 	board[Cursor.x][Cursor.y] = letra;
 }
-
 char Board::ShowChar() const // Lê o char onde o cursor esta
 {
 	return board[Cursor.x][Cursor.y];
@@ -157,12 +253,9 @@ void Board::Fill() // Enche as casas vazias com '#'
 	}
 }
 
-string Board::saveFile(string dict_path) {
-	ostringstream oss;
-	oss << "b" << setfill('0') << setw(3) << boardNumber;
-	oss << ".txt"; // oss = bxxx.txt
-	ofstream file_dest(oss.str());
-	file_dest << dict_path << endl << endl; 
+void Board::saveFile(string file_path) {
+	ofstream file_dest(file_path);
+	file_dest << file_path << endl << endl; // file_path no topo
 	for (int i = 0; i < size_x; i++) {
 		for (int j = 0; j < size_y; j++)
 			file_dest << board[j][i] << ' ';
@@ -171,12 +264,10 @@ string Board::saveFile(string dict_path) {
 	file_dest << endl;
 	for (map<string, string>::const_iterator ite = placedWords_Coords.begin(); ite != placedWords_Coords.end(); ite++)
 		file_dest << ite->first << " " << ite->second << endl;
-	return oss.str();
 }
 
 void Board::loadFile(string file_path) {
-	this->boardNumber = stoi(file_path.substr(1, 3)); // file_path = bxxx.txt, substr(1, 3) = xxx. Converte para int.
-	reset(MAX_SIZE, MAX_SIZE); 
+	reset(MAX_SIZE, MAX_SIZE); //
 	ifstream file_orig(file_path); string line;
 	size_t sizeX_file, sizeY_file = 0;
 	if (file_orig.is_open()) {
@@ -199,12 +290,11 @@ void Board::loadFile(string file_path) {
 		while (file_orig >> coords) {
 			file_orig >> word;
 			placedWords_Coords[coords] = word;
+			// file_orig.clear(); file_orig.ignore(1000, '\n'); // Acho que isto nao e preciso. Deixar estar caso haja problemas relacionados.
 		}
 	}
-	else {
+	else
 		cout << "File could not be opened." << endl;
-		file_orig.close();
-	}
 }
 
 void Board::shrinkBoard(size_t newSize_x, size_t newSize_y) {
@@ -234,144 +324,44 @@ void Board::reset(size_t newSize_x, size_t newSize_y) { // Reinicia o board com 
 	placedWords_Coords.clear(); // Limpa o map
 }
 
+vector<string> Board::getSuggestions(string coords) { // Recebe coordenadas (LcD) e devolve todas as possibilidades para essa casa.
+	vector<string> suggestions;
+	Cursor.moveTo(coords);
+	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
+	for (int i = Cursor.MainCoord(); i < CoordLimit(); i++) {
+		vector<string> wildcards = dict.getWildcardMatches(getWildcard(coords, wordSize)); // recebe as wildcards associadas ao wordSize atual, com as coordenadas fornecidas.
+		suggestions.insert(suggestions.end(), wildcards.begin(), wildcards.end()); // Insere essas wildcards no vetor.
+		wordSize++;
+	}
+	return suggestions;
+}
+
 string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD) e o tamanho da palavra e retorna uma string de '?' e letras, dependendo se a casa está preenchida ou nao.
 	string wildcard;
 	Cursor.moveTo(coords);
 	if (Cursor.MainCoord() > 0) // Se puder "andar para trás"
 	{
 		Cursor--;
+		cout << isalpha(ShowChar());
 		if (isalpha(ShowChar())) // Se o anterior for uma letra.
 			return "";
 		Cursor++;
 	}
 	for (int i = 0; i < size; i++) { // Vê cada carater.
-		if (ShowChar() == '.')
-			wildcard.append("?"); // Adiciona a string de retorno o carater '?'.
-		else if (ShowChar() == '#')
-			break;
-		else if (isalpha(ShowChar())) // isalpha apenas por segurança, em princípio será sempre ser alfabetico
+		if (isalpha(ShowChar()))
 			wildcard.append(1, ShowChar()); // Adiciona a string de retorno o carater.
+		else
+			wildcard.append("?"); // Adiciona a string de retorno o carater '?'.
 		Cursor++;
 	}
 	if (Cursor.MainCoord() < CoordLimit() && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
 		return ""; // E se o carater a seguir ao ultimo for uma letra.
-	if (getWord(coords) == wildcard)
-		return "";
-	else return wildcard;
+	return wildcard;
 }
 
-bool Board::validCoords(string &coords) {
-	stringUpper(coords);
-	if (coords.size() != 3 || coords[0] < 'A' || coords[0] - 'A' >= size_y || coords[1] < 'A' || coords[1] - 'A' >= size_x || (coords[2] != 'H' && coords[2] != 'V'))
-		return false;
-	coords[1] = tolower(coords[1]); // Converte o segundo carater para minuscula (Formato LcD).
-	return true;
+void ShowVector(vector<string> v)
+{
+	for (int i = 0; i < v.size(); i++)
+		cout << v[i] << "  ";
+	cout << endl;
 }
-
-string Board::getWord(string coords) const {
-	for (auto ite : placedWords_Coords) {
-		if (ite.first == coords)
-			return ite.second;
-	}
-	return "";
-}
-
-bool Board::hasWord(string word) const {
-	for (auto ite : placedWords_Coords) {
-		if (ite.second == word)
-			return true;
-	}
-	return false;
-}
-
-bool Board::extraWords(Dictionary dict) {
-	map<string, string> invalidWords;
-	map<string, string> validWords;
-	bool gettingWord = false;
-	string extraWord;
-	string extraWordCoords;
-	string CoordsLCD;
-	for (int i = 0; i<size_x; i++) {
-		for (int j = 0; j < size_y; j++) {
-			CoordsLCD = { (char)(j + 'A'), (char)(i + 'a'), 'V' };
-			if (gettingWord) {  //ve se esta a meio de uma palavra
-				if (board[i][j] == '#' || board[i][j] == '.' || j == 0) { //palavra ja acabou?
-					if (extraWord.size() > 1) {	//evita quando e so uma letra				
-						if (dict.wordExists(extraWord))
-							validWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras validas
-						else invalidWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras invalidas
-					}
-					if (j == 0)	j--;
-					gettingWord = false;
-				}
-				else extraWord += board[i][j]; // adiciona letra nova a palavra
-			}
-			else if (isalpha(board[i][j])) {//quando nao esta a meio da formacao de uma palavra. verifica se e uma letra
-				if (placedWords_Coords.find(CoordsLCD) == placedWords_Coords.end()) { // se nao for o inicio de uma palavra do map  
-					extraWord = board[i][j];                                          // de palavras , comeca uma nova palavra
-					extraWordCoords = CoordsLCD;
-					gettingWord = true;
-				}
-				else j += placedWords_Coords[CoordsLCD].size();	 //se for o inicio de uma palavra do map
-			}
-		}
-	}
-	//A MESMA COISA MAS HORIZONTAL
-    for (int i = 0; i<size_y; i++) { //Diferenca (size_y)
-        for (int j = 0; j < size_x; j++) {   //Diferenca (size_x)
-            CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' }; // Diferenca (i,j,H)
-            if (gettingWord) {
-				if (board[j][i] == '#' || board[j][i] == '.' || j == 0) {  // Diferenca (j,i)
-                    if (extraWord.size() > 1) {
-                        if (dict.wordExists(extraWord))
-                            validWords[extraWordCoords] = extraWord;
-                        else invalidWords[extraWordCoords] = extraWord;
-                    }
-					if (j == 0)	j--;
-                    gettingWord = false;
-                }
-                else extraWord += board[j][i]; // Diferenca (j,i)
-            }
-            else if (isalpha(board[j][i])) {//verifica se e uma letra
-				if (placedWords_Coords.find(CoordsLCD) == placedWords_Coords.end()) {
-					extraWord = board[j][i];
-					extraWordCoords = CoordsLCD;
-					gettingWord = true;
-				}
-				else j += placedWords_Coords[CoordsLCD].size();
-			}
-		}
-	}
-	if (validWords.size() > 0) { //mostra as palavras novas validas
-		cout << "New Words:" << '\n';
-		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
-			cout << it->first << " " << it->second << "\n";
-	}
-	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
-		cout << "Invalid words:" << '\n';
-		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
-			cout << it->first << " " << it->second << "\n";
-		return false;  //se existirem palavra invalidas
-	}
-	else { //se nao existirem palavra invalidas
-		placedWords_Coords.insert(validWords.begin(), validWords.end()); //Adiciona ao map de palavras as novas(DEVERIA ADICIONA A MESMA SE HOUVESSE INVALIDAS???)
-		return true;
-	}
-}
-
-int find_BoardNumber() {
-	// Para determinar o número de tabuleiros.
-	size_t numBoards = 0;
-	ostringstream oss;
-	fstream f;
-	do { // Este ciclo descobre o número de tabuleiros que existem
-		f.close();
-		oss.str("");
-		oss << "b" << setfill('0') << setw(3) << numBoards+1;
-		oss << ".txt"; // oss = bxxx.txt
-		f.open(oss.str());
-		numBoards++;
-	} while (f.good());
-	return numBoards;
-}
-
