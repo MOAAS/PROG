@@ -16,6 +16,7 @@ public:
 	Board(int size_x, int size_y);
 	void display() const;
 	bool Verify(string coords, string palavra);//Ve se pode por a palavra
+	void Insert(string word, string coords);
 	void RefreshBoard();
 	void shrinkBoard(size_t newSize_x, size_t newSize_y);
 	bool Delete(string coords);
