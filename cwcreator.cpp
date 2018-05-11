@@ -21,7 +21,7 @@ pair<Board, Dictionary> createPuzzle();
 pair<Board, Dictionary> resumePuzzle();
 
 string getInput_Coords(Board b1, Dictionary d1);
-string getInput_Word(Board b1, Dictionary d1);
+string getInput_Word(Board b1, Dictionary d1, string coords);
 
 string boardBuilding(Board &b1, Dictionary d1);
 
@@ -75,7 +75,7 @@ string boardBuilding(Board &b1, Dictionary d1) {
 			b1.Fill();
 			break; // Agora vai verificar se há palavras extra.
 		}
-		string input_word = getInput_Word(b1, d1);
+		string input_word = getInput_Word(b1, d1, input_coords);
 		if (input_word == "-")
 			delete_at(input_coords, b1);
 		else if (input_word == "?")
@@ -87,12 +87,11 @@ string boardBuilding(Board &b1, Dictionary d1) {
 		cout << "The board is finished!" << endl;
 		return "VALID";
 	}
-	else {
-		return "INVALID";
-	}
+	else return "INVALID";
 }
 
 string displayInstructions() {
+	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
 	cout << "=========================" << endl;
 	cout << "INSTRUCTIONS:" << endl;
 	cout << "You will be asked to input a position and its respective word. until you don't want to add any extra words to the board." << endl;
@@ -177,7 +176,7 @@ string getInput_Coords(Board b1, Dictionary d1) {
 	return input_coords;
 }
 
-string getInput_Word(Board b1, Dictionary d1) {
+string getInput_Word(Board b1, Dictionary d1, string coords) {
 	string input_word;
 	bool validWord;
 	do	{
@@ -185,14 +184,23 @@ string getInput_Word(Board b1, Dictionary d1) {
 		cout << "Word ( - = remove / ? = help ) ? ";
 		cin >> input_word;
 		stringUpper(input_word);
-		if (!d1.wordExists(input_word) && input_word != "-" && input_word != "?") { //EXISTE NO DICIONARIO?
+		bool exists = d1.wordExists(input_word);
+		if (!exists && input_word != "-" && input_word != "?") { //EXISTE NO DICIONARIO?
 			cout << "The word " << input_word << " does not exist in the dictionary!" << endl;
 			validWord = false;
 		}
-		else if (d1.wordExists(input_word) && b1.hasWord(input_word)) {
+		else if (exists && b1.hasWord(input_word)) {
 			cout << "The word " << input_word << " is already in the board!" << endl;
 			validWord = false;
-		}			
+		}
+		else if (exists && !b1.Verify(coords, input_word)) {
+			cout << "The word " << input_word << " does not fit in the board!" << endl;
+			validWord = false;
+		}
+		else if (input_word == "-" && b1.getWord(coords) == "") {
+			cout << "No words start in that position." << endl;
+			validWord = false;
+		}
 		cin.ignore(1000, '\n');
 	} while (!validWord);
 	return input_word;
@@ -212,10 +220,9 @@ bool restartCreator() {
 }
 
 void delete_at(string coords, Board &b1) {
+	string deleted_word = b1.getWord(coords);
 	if (b1.Delete(coords)) // Tenta apagar
-		cout << "Successfully deleted the word " << b1.getWord(coords) << ".\n";
-	else
-		cout << "No words start in that position." << endl;
+		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
 void displaySuggestions(Board b1, Dictionary d1, string coords) {
@@ -238,16 +245,13 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 }
 
 void insert_at(string coords, string word, Board &b1) {
-	if (b1.Verify(coords, word)) {
-		cout << "The word " << word << " has been inserted." << endl;
-	}
-	else
-		cout << "The word " << word << " does not fit in the board." << endl;
+	b1.Insert(word, coords);
+	cout << "The word " << word << " has been inserted." << endl;
 }
 
 void ShowVector(vector<string> v)
 {
 	for (int i = 0; i < v.size(); i++)
-		cout << v[i] << "  ";
+		cout << v[i] << " ";
 	cout << endl;
 }
