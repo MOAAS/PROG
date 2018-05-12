@@ -22,7 +22,7 @@ public:
 	bool Delete(string coords);
 	void ChangeChar(char letra); //altera no board a letra com base na posicao do cursor
 	char ShowChar() const; //ve que letra esta na posicao do cursor
-	size_t CoordLimit() const; // dá a coordenada maxima do board na direcao atual do cursor (coordlimit() já está fora do tabuleiro)
+	size_t CoordLimit(Cursor c) const; // dá a coordenada maxima do board na direcao atual do cursor (coordlimit() já está fora do tabuleiro)
 	bool isFull() const;
 	void clear();
 	void reset();
@@ -41,7 +41,7 @@ private:
 	size_t size_x, size_y;
 	vector<vector<char>> board; // Mais usado visualmente.
 	map<string, string> placedWords_Coords; // ["LCD", "Palavra"]. Guarda a informação mais necessária.
-	Cursor Cursor;
+	Cursor cursor;
 	void Insert_in_board(string coords, string palavra); //mete
 };
 
