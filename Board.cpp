@@ -54,24 +54,24 @@ void Board::display() const {
 
 bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
 {
-    Cursor.moveTo(coords);
+    cursor.moveTo(coords);
     size_t size = word.length();
-    if (Cursor.MainCoord() + size > CoordLimit())
+    if (cursor.MainCoord() + size > CoordLimit(cursor))
         return false;
-    if (Cursor.MainCoord() > 0) //verifica se antes tem letra
+    if (cursor.MainCoord() > 0) //verifica se antes tem letra
     {
-        Cursor--;
+        cursor--;
         if (ShowChar() != '#' && ShowChar() != '.')
             return false;
-        Cursor++;
+        cursor++;
     }
     for (int i = 0; i < size; i++)
     {
         if (ShowChar() != word[i] && ShowChar() != '.')
             return false;
-        Cursor++;
+        cursor++;
     }
-    if (Cursor.MainCoord() < CoordLimit()) //verifica se depois tem letra
+    if (cursor.MainCoord() < CoordLimit(cursor)) //verifica se depois tem letra
         if (ShowChar() != '#' && ShowChar() != '.')
             return false;
     return true;
@@ -102,36 +102,36 @@ void Board::RefreshBoard() { // Vai ao map, coloca as palavras no tabuleiro
 
 void Board::Insert_in_board(string coords, string word) // Insere word apenas no tabuleiro visual. coords indica onde a palavra começa, no formato LcD. 
 {
-	Cursor.moveTo(coords);
+	cursor.moveTo(coords);
 	size_t size = word.length();
-	if (Cursor.MainCoord() > 0)
+	if (cursor.MainCoord() > 0)
 	{
-		Cursor--;
+		cursor--;
 		ChangeChar('#');
-		Cursor++;
+		cursor++;
 	}
 	for (int i = 0; i<size; i++)
 	{
 		ChangeChar(word[i]);
-		Cursor++;
+		cursor++;
 	}
-	if (Cursor.MainCoord() < CoordLimit()) //verifica se pode por # depois
+	if (cursor.MainCoord() < CoordLimit(cursor)) //verifica se pode por # depois
 		ChangeChar('#');
 }
 
 void Board::ChangeChar(char letra) // Altera o char onde o cursor esta
 {
-	board[Cursor.x][Cursor.y] = letra;
+	board[cursor.x][cursor.y] = letra;
 }
 
 char Board::ShowChar() const // Lê o char onde o cursor esta
 {
-	return board[Cursor.x][Cursor.y];
+	return board[cursor.x][cursor.y];
 }
 
-size_t Board::CoordLimit() const
+size_t Board::CoordLimit(Cursor c) const
 {
-	if (Cursor.dir == 'H')
+	if (c.dir == 'H')
 		return size_x;
 	else return size_y;
 }
@@ -163,8 +163,8 @@ string Board::saveFile(string dict_path) {
 	oss << ".txt"; // oss = bxxx.txt
 	ofstream file_dest(oss.str());
 	file_dest << dict_path << endl << endl; 
-	for (int i = 0; i < size_x; i++) {
-		for (int j = 0; j < size_y; j++)
+	for (int i = 0; i < size_y; i++) {
+		for (int j = 0; j < size_x; j++)
 			file_dest << board[j][i] << ' ';
 		file_dest << endl;
 	}
@@ -185,10 +185,10 @@ void Board::loadFile(string file_path) {
 		getline(file_orig, line); // tira a primeira linha do tabuleiro.
 		for (int i = 0; line != ""; i++) {
 			sizeX_file = line.size() / 2; // Vai determinar o tamanho do tabuleiro no ficheiro.
-			Cursor.moveTo(0, i);
+			cursor.moveTo(0, i);
 			for (int j = 0; j < line.size(); j = j + 2) {
 				ChangeChar(line[j]);
-				Cursor++;
+				cursor++;
 			}
 			sizeY_file++;
 			getline(file_orig, line);
@@ -236,13 +236,13 @@ void Board::reset(size_t newSize_x, size_t newSize_y) { // Reinicia o board com 
 
 string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD) e o tamanho da palavra e retorna uma string de '?' e letras, dependendo se a casa está preenchida ou nao.
 	string wildcard;
-	Cursor.moveTo(coords);
-	if (Cursor.MainCoord() > 0) // Se puder "andar para trás"
+	cursor.moveTo(coords);
+	if (cursor.MainCoord() > 0) // Se puder "andar para trás"
 	{
-		Cursor--;
+		cursor--;
 		if (isalpha(ShowChar())) // Se o anterior for uma letra.
 			return "";
-		Cursor++;
+		cursor++;
 	}
 	for (int i = 0; i < size; i++) { // Vê cada carater.
 		if (ShowChar() == '.')
@@ -251,9 +251,9 @@ string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD
 			break;
 		else if (isalpha(ShowChar())) // isalpha apenas por segurança, em princípio será sempre ser alfabetico
 			wildcard.append(1, ShowChar()); // Adiciona a string de retorno o carater.
-		Cursor++;
+		cursor++;
 	}
-	if (Cursor.MainCoord() < CoordLimit() && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
+	if (cursor.MainCoord() < CoordLimit(cursor) && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
 		return ""; // E se o carater a seguir ao ultimo for uma letra.
 	if (getWord(coords) == wildcard)
 		return "";
