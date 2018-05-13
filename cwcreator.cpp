@@ -99,7 +99,7 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 		else insert_at(input_coords, input_word, b1); // Insere no tabuleiro. Não verifica se cabe nem se existe! (Assume que já foi feito)
 		cout << endl;
 	}
-	if (finalCheck(b1,d1)) { // Se extraWords == true, as palavras novas são todas válidas
+	if (finalCheck(b1, d1)) { // Se extraWords == true, as palavras novas são todas válidas
 		cout << "The board is finished!" << endl;
 		return true;
 	}
@@ -315,7 +315,7 @@ bool finalCheck(Board &b1, Dictionary d1)
 {
 	map<string, string> newWords = b1.extraWords();
 	map<string, string> validWords, invalidWords;
-	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) 
+	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
 	{
 		if (d1.wordExists(it->second))	//separa as palavras validas das invalidas em dois maps diferentes
 			validWords[it->second] = it->first;
