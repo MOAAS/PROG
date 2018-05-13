@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <windows.h>
 #include <string>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -261,7 +262,7 @@ string Board::getWildcard(string coords, int size) { //  Recebe coordenadas (LcD
 }
 
 bool Board::validCoords(string &coords) {
-	stringUpper(coords);
+	transform(coords.begin(), coords.end(), coords.begin(), ::toupper); // Converte para letras maiusculas!
 	if (coords.size() != 3 || coords[0] < 'A' || coords[0] - 'A' >= size_y || coords[1] < 'A' || coords[1] - 'A' >= size_x || (coords[2] != 'H' && coords[2] != 'V'))
 		return false;
 	coords[1] = tolower(coords[1]); // Converte o segundo carater para minuscula (Formato LcD).
@@ -296,7 +297,7 @@ map<string, string> Board::extraWords() {
 			if (gettingWord) {  //ve se esta a meio de uma palavra
 				if (board[i][j] == '#' || board[i][j] == '.' || j == 0) { //palavra ja acabou?
 					if (extraWord.size() > 1) 	//evita quando e so uma letra				
-							newWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras
+						newWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras
 					if (j == 0)	j--;
 					gettingWord = false;
 				}
@@ -318,8 +319,8 @@ map<string, string> Board::extraWords() {
 			CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' }; // Diferenca (i,j,H)
 			if (gettingWord) {
 				if (board[j][i] == '#' || board[j][i] == '.' || j == 0) {  // Diferenca (j,i)
-					if (extraWord.size() > 1) 				
-						newWords[extraWordCoords] = extraWord;		
+					if (extraWord.size() > 1)
+						newWords[extraWordCoords] = extraWord;
 					if (j == 0)	j--;
 					gettingWord = false;
 				}
@@ -353,4 +354,3 @@ int find_BoardNumber() {
 	} while (f.good());
 	return numBoards;
 }
-
