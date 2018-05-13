@@ -11,9 +11,10 @@ Dictionary::Dictionary() {
 
 }
 
-Dictionary::Dictionary(string textFile) {
+Dictionary::Dictionary(string textFile) { 
 	load(textFile);
 }
+
 
 bool Dictionary::wordExists(string word) const{
 	stringUpper(word);
@@ -39,10 +40,12 @@ void Dictionary::load(string filePath) {
 				words[keyWord].push_back(synonym); // Coloca no vetor associado a keyWord.
 			}
 		}
+		this->filePath = filePath;
 	}
 	else { // Se o ficheiro nao abrir
 		cout << "File could not be opened." << endl;
 	}
+
 }
 
 // Mostra as palavras do dicionario e os seus sinonimos. debug
