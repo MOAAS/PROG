@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 #include "Cursor.h"
-#include "Dictionary.h"
 using namespace std;
 
 class Board
