@@ -54,32 +54,32 @@ void Board::display() const {
 
 bool Board::Verify(string coords, string word) // Verifica se word cabe nas coordenadas indicadas por coords (formato LcD).
 {
-    cursor.moveTo(coords);
-    size_t size = word.length();
-    if (cursor.MainCoord() + size > CoordLimit(cursor))
-        return false;
-    if (cursor.MainCoord() > 0) //verifica se antes tem letra
-    {
-        cursor--;
-        if (ShowChar() != '#' && ShowChar() != '.')
-            return false;
-        cursor++;
-    }
-    for (int i = 0; i < size; i++)
-    {
-        if (ShowChar() != word[i] && ShowChar() != '.')
-            return false;
-        cursor++;
-    }
-    if (cursor.MainCoord() < CoordLimit(cursor)) //verifica se depois tem letra
-        if (ShowChar() != '#' && ShowChar() != '.')
-            return false;
-    return true;
+	cursor.moveTo(coords);
+	size_t size = word.length();
+	if (cursor.MainCoord() + size > CoordLimit(cursor))
+		return false;
+	if (cursor.MainCoord() > 0) //verifica se antes tem letra
+	{
+		cursor--;
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+		cursor++;
+	}
+	for (int i = 0; i < size; i++)
+	{
+		if (ShowChar() != word[i] && ShowChar() != '.')
+			return false;
+		cursor++;
+	}
+	if (cursor.MainCoord() < CoordLimit(cursor)) //verifica se depois tem letra
+		if (ShowChar() != '#' && ShowChar() != '.')
+			return false;
+	return true;
 }
 
 void Board::Insert(string word, string coords) {
-    placedWords_Coords[coords] = word; // adiciona ao map
-    RefreshBoard(); // atualiza o board
+	placedWords_Coords[coords] = word; // adiciona ao map
+	RefreshBoard(); // atualiza o board
 }
 
 bool Board::Delete(string coords) // Recebe uma string no formato LcD e apaga a palavra que começa nessa casa.
@@ -162,7 +162,7 @@ string Board::saveFile(string dict_path) {
 	oss << "b" << setfill('0') << setw(3) << boardNumber;
 	oss << ".txt"; // oss = bxxx.txt
 	ofstream file_dest(oss.str());
-	file_dest << dict_path << endl << endl; 
+	file_dest << dict_path << endl << endl;
 	for (int i = 0; i < size_y; i++) {
 		for (int j = 0; j < size_x; j++)
 			file_dest << board[j][i] << ' ';
@@ -176,7 +176,7 @@ string Board::saveFile(string dict_path) {
 
 void Board::loadFile(string file_path) {
 	this->boardNumber = stoi(file_path.substr(1, 3)); // file_path = bxxx.txt, substr(1, 3) = xxx. Converte para int.
-	reset(MAX_SIZE, MAX_SIZE); 
+	reset(MAX_SIZE, MAX_SIZE);
 	ifstream file_orig(file_path); string line;
 	size_t sizeX_file, sizeY_file = 0;
 	if (file_orig.is_open()) {
@@ -284,9 +284,8 @@ bool Board::hasWord(string word) const {
 	return false;
 }
 
-bool Board::extraWords(Dictionary dict) {
-	map<string, string> invalidWords;
-	map<string, string> validWords;
+map<string, string> Board::extraWords() {
+	map<string, string> newWords;
 	bool gettingWord = false;
 	string extraWord;
 	string extraWordCoords;
@@ -296,11 +295,8 @@ bool Board::extraWords(Dictionary dict) {
 			CoordsLCD = { (char)(j + 'A'), (char)(i + 'a'), 'V' };
 			if (gettingWord) {  //ve se esta a meio de uma palavra
 				if (board[i][j] == '#' || board[i][j] == '.' || j == 0) { //palavra ja acabou?
-					if (extraWord.size() > 1) {	//evita quando e so uma letra				
-						if (dict.wordExists(extraWord))
-							validWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras validas
-						else invalidWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras invalidas
-					}
+					if (extraWord.size() > 1) 	//evita quando e so uma letra				
+							newWords[extraWordCoords] = extraWord;		//adiciona ao map de palavras
 					if (j == 0)	j--;
 					gettingWord = false;
 				}
@@ -317,22 +313,19 @@ bool Board::extraWords(Dictionary dict) {
 		}
 	}
 	//A MESMA COISA MAS HORIZONTAL
-    for (int i = 0; i<size_y; i++) { //Diferenca (size_y)
-        for (int j = 0; j < size_x; j++) {   //Diferenca (size_x)
-            CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' }; // Diferenca (i,j,H)
-            if (gettingWord) {
+	for (int i = 0; i<size_y; i++) { //Diferenca (size_y)
+		for (int j = 0; j < size_x; j++) {   //Diferenca (size_x)
+			CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' }; // Diferenca (i,j,H)
+			if (gettingWord) {
 				if (board[j][i] == '#' || board[j][i] == '.' || j == 0) {  // Diferenca (j,i)
-                    if (extraWord.size() > 1) {
-                        if (dict.wordExists(extraWord))
-                            validWords[extraWordCoords] = extraWord;
-                        else invalidWords[extraWordCoords] = extraWord;
-                    }
+					if (extraWord.size() > 1) 				
+						newWords[extraWordCoords] = extraWord;		
 					if (j == 0)	j--;
-                    gettingWord = false;
-                }
-                else extraWord += board[j][i]; // Diferenca (j,i)
-            }
-            else if (isalpha(board[j][i])) {//verifica se e uma letra
+					gettingWord = false;
+				}
+				else extraWord += board[j][i]; // Diferenca (j,i)
+			}
+			else if (isalpha(board[j][i])) {//verifica se e uma letra
 				if (placedWords_Coords.find(CoordsLCD) == placedWords_Coords.end()) {
 					extraWord = board[j][i];
 					extraWordCoords = CoordsLCD;
@@ -342,21 +335,7 @@ bool Board::extraWords(Dictionary dict) {
 			}
 		}
 	}
-	if (validWords.size() > 0) { //mostra as palavras novas validas
-		cout << "New Words:" << '\n';
-		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
-			cout << it->first << " " << it->second << "\n";
-	}
-	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
-		cout << "Invalid words:" << '\n';
-		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
-			cout << it->first << " " << it->second << "\n";
-		return false;  //se existirem palavra invalidas
-	}
-	else { //se nao existirem palavra invalidas
-		placedWords_Coords.insert(validWords.begin(), validWords.end()); //Adiciona ao map de palavras as novas(DEVERIA ADICIONA A MESMA SE HOUVESSE INVALIDAS???)
-		return true;
-	}
+	return newWords;
 }
 
 int find_BoardNumber() {
@@ -367,7 +346,7 @@ int find_BoardNumber() {
 	do { // Este ciclo descobre o número de tabuleiros que existem
 		f.close();
 		oss.str("");
-		oss << "b" << setfill('0') << setw(3) << numBoards+1;
+		oss << "b" << setfill('0') << setw(3) << numBoards + 1;
 		oss << ".txt"; // oss = bxxx.txt
 		f.open(oss.str());
 		numBoards++;
