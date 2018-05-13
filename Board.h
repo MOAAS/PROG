@@ -34,7 +34,7 @@ public:
 	bool validCoords(string &coords);
 	string getWord(string coords) const;
 	bool hasWord(string word) const;
-	bool extraWords(Dictionary dict);
+	map<string, string> extraWords();
 	static const size_t MAX_SIZE = 20;
 private:
 	int boardNumber;
