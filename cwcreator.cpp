@@ -30,12 +30,13 @@ bool boardBuilding(Board &b1, Dictionary d1);
 void delete_at(string coords, Board &b1);
 void displaySuggestions(Board b1, Dictionary d1, string coords);
 void insert_at(string coords, string word, Board &b1);
+bool finalCheck(Board &b1, Dictionary d1);
 
 void ShowVector(vector<string> v);
 
+
 /*
 Pergunta ao utilizador o que deseja fazer, e chama as funções de construir o tabuleiro. Quando o tabuleiro for válido, pergunta ao utilizador se deseja recomeçar ou sair.
-
 Board b1 - Board principal
 Dictionary d1 - Dictionary principal
 pair<Board, Dictionary> Puzzle - Guarda os dois anteriores.
@@ -53,17 +54,17 @@ int main() {
 			option = displayInstructions(); // Mostra instruções e retorna a opção do utilizador.
 		} while (option != '0' && option != '1' && option != '2');
 		if (option == '0')
-			exit(0); 
-		else if (option == '1') 
+			exit(0);
+		else if (option == '1')
 			Puzzle = createPuzzle();
 		else if (option == '2')
 			Puzzle = resumePuzzle();
 		b1 = Puzzle.first; // Puzzle é um par da forma: (board, dictionary)
 		d1 = Puzzle.second;
-		bool boardValid; 
+		bool boardValid;
 		do {
 			boardValid = boardBuilding(b1, d1);
-			if (!boardValid) { 
+			if (!boardValid) {
 				b1.RefreshBoard(); // Equivalente a um unfill. (Tira os '#' postos no fim).
 				cout << "The board still has some invalid words, it cannot be finished until those are removed." << endl;
 			}
@@ -75,12 +76,11 @@ int main() {
 	}
 }
 
-/* 
+/*
 Enquanto o tabuleiro não estiver cheio: chama as funçoes que pedem as coordenadas e as palavras.
 Quando o utilizador estiver realmente acabado (ou o tabuleiro estiver cheio), enche o tabuleiro e verifica se há palavras extra.
-
 string input_coords - "AaH" por exemplo. "SAVE", "FINISH" são cadeias de retorno especiais, indicam uma ordem ao programa.
-string input_word - Será qualquer palavra contida no dicionário que caiba nas coordenadas fornecidas, ou "-" (remove palavra nas coordenadas, se houver), ou "?" (dá sugestões). 
+string input_word - Será qualquer palavra contida no dicionário que caiba nas coordenadas fornecidas, ou "-" (remove palavra nas coordenadas, se houver), ou "?" (dá sugestões).
 */
 bool boardBuilding(Board &b1, Dictionary d1) {
 	while (!b1.isFull()) {
@@ -99,7 +99,7 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 		else insert_at(input_coords, input_word, b1); // Insere no tabuleiro. Não verifica se cabe nem se existe! (Assume que já foi feito)
 		cout << endl;
 	}
-	if (b1.extraWords(d1)) { // Se extraWords == true, as palavras novas são todas válidas
+	if (finalCheck(b1,d1)) { // Se extraWords == true, as palavras novas são todas válidas
 		cout << "The board is finished!" << endl;
 		return true;
 	}
@@ -108,7 +108,6 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 
 /*
 Mostra as instruções e pergunta ao utilizador o que quer fazer: começar, continuar um puzzle, ou sair.
-
 char option - Opção do utilizador (0, 1, 2)
 */
 char displayInstructions() {
@@ -131,10 +130,8 @@ char displayInstructions() {
 }
 /*
 Pede o nome do ficheiro do dicionario, abre-o. Pede o tamanho do tabuleiro, cria-o. Devolve os dois.
-
 string dictFile_path - ficheiro de dicionario
 int boardSizeX, boardSizeY - colunas e linhas do tabuleiro. Fornecido pelo utilizador.
-
 */
 pair<Board, Dictionary> createPuzzle() {
 	string dictFile_path; ifstream file;
@@ -149,7 +146,7 @@ pair<Board, Dictionary> createPuzzle() {
 	file.close();
 	Dictionary d1(dictFile_path);
 	do { // Loop enquanto o input for inválido.
-		cout << "Board size (lines columns) ? "; 
+		cout << "Board size (lines columns) ? ";
 		cin >> boardSizeY >> boardSizeX; cin.clear(); cin.ignore(1000, '\n');// SizeY = numero de linhas. SizeX = numero de colunas !
 	} while (boardSizeX < 0 || boardSizeY < 0 || boardSizeX > Board::MAX_SIZE || boardSizeY > Board::MAX_SIZE);
 	cout << endl << endl;
@@ -160,10 +157,8 @@ pair<Board, Dictionary> createPuzzle() {
 
 /*
 Pede o nome do ficheiro do tabuleiro "bxxx.txt", abre-o. Carrega o dicionario e o tabuleiro do ficheiro e devolve os dois.
-
 string boardFile_path - Fornecido pelo utilizador ("bxxx.txt")
 string dictFile_path - Fornecido pelo ficheiro de tabuleiro
-
 */
 pair<Board, Dictionary> resumePuzzle() {
 	string boardFile_path, dictFile_path;
@@ -184,7 +179,6 @@ pair<Board, Dictionary> resumePuzzle() {
 
 /*
 Pede coordenadas na forma LcD ("AaH", por exemplo, Case-Insensitive!). Apenas devolve coordenadas quando forem válidas, isto é, nem podem estar fora do tabuleiro. Se o utilizador fizer Ctrl + Z, pode retornar também "FINISH" se o utilizador quiser terminar, ou "SAVE" se o utilizador quiser guardar para mais tarde.
-
 string input_coords - coordenadas que o utilizador fornece (case insensitive). A retornar.
 flag validCoords - flag que mostra se o utilizador já introduziu input válido.
 */
@@ -219,17 +213,14 @@ string getInput_Coords(Board b1, Dictionary d1) {
 
 /*
 Pede uma palavra. Apenas a devolve quando for válida. Isto é, a palavra tem de existir no dicionário, não pode estar no tabuleiro, tem de caber nele. Se o utilizador pedir para remover uma palavra, tem de haver uma palavra nas coordenadas (coords).
-
 string input_word - palavra fornecida (pode ser "-" ou "?" tambem)
 flag validWord - indica a validade do input
 bool exists - auxiliar. indica se o input existe no dicionario.
-
-
 */
 string getInput_Word(Board b1, Dictionary d1, string coords) {
 	string input_word;
 	flag validWord;
-	do	{ // Loop enquanto input inválido.
+	do { // Loop enquanto input inválido.
 		validWord = true;
 		cout << "Word ( - = remove / ? = help ) ? ";
 		cin >> input_word; cin.clear(); cin.ignore(10000, '\n');
@@ -242,7 +233,7 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 		else if (exists && b1.hasWord(input_word)) { // Palavra existe, mas board já a tem.
 			cout << "The word " << input_word << " is already in the board!" << endl;
 			validWord = false;
-		} 
+		}
 		else if (exists && !b1.Verify(coords, input_word)) { // Palavra existe, mas não pode ser colocada.
 			cout << "The word " << input_word << " does not fit in the board!" << endl;
 			validWord = false;
@@ -257,11 +248,10 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 
 /*
 Pergunta ao utilizador se quer recomeçar o programa. Se a resposta for "N", fecha o programa. Se for "Y", não faz nada.
-
 char decision - input.
 */
 void restartCreator() {
-	char decision; 
+	char decision;
 	cout << endl;
 	do { // Loop enquanto input não for "Y" nem "N".
 		cout << "Do you want to restart? (Y/N) ";
@@ -273,22 +263,20 @@ void restartCreator() {
 }
 
 /*
-Tenta apagar a palavra que começa em coords (formato LcD). 
-
+Tenta apagar a palavra que começa em coords (formato LcD).
 string deleted_word - palavra que foi apagada.
 */
 void delete_at(string coords, Board &b1) {
-	string deleted_word = b1.getWord(coords); 
+	string deleted_word = b1.getWord(coords);
 	if (b1.Delete(coords)) // Tenta apagar
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
 /*
-Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wilcard é usada a função getwildcardmatches do trabalho 1. 
-
+Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wilcard é usada a função getwildcardmatches do trabalho 1.
 vector<string> sugestoes - vetor a retornar. conterá todas as sugestoes
-Cursor c1 - cursor auxiliar. 
-string wildcard - Exemplo, "P???R". 
+Cursor c1 - cursor auxiliar.
+string wildcard - Exemplo, "P???R".
 vector<string> wildcards - todas as possibilidades para wilcard
 */
 void displaySuggestions(Board b1, Dictionary d1, string coords) {
@@ -321,4 +309,32 @@ void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
 	for (int i = 0; i < v.size(); i++)
 		cout << v[i] << " ";
 	cout << endl;
+}
+
+bool finalCheck(Board &b1, Dictionary d1)
+{
+	map<string, string> newWords = b1.extraWords();
+	map<string, string> validWords, invalidWords;
+	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) 
+	{
+		if (d1.wordExists(it->second))	//separa as palavras validas das invalidas em dois maps diferentes
+			validWords[it->second] = it->first;
+		else invalidWords[it->second] = it->first;
+	}
+	if (validWords.size() > 0) { //mostra as palavras novas validas
+		cout << "New Words:" << '\n';
+		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
+			cout << it->second << " " << it->first << "\n";
+	}
+	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
+		cout << "Invalid words:" << '\n';
+		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
+			cout << it->second << " " << it->first << "\n";
+		return false;  //se existirem palavra invalidas
+	}
+	else { //se nao existirem palavra invalidas , adiciona as palavras extra ao board
+		for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
+			b1.Insert(it->second, it->first);
+		return true;
+	}
 }
