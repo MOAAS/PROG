@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <string>
 #include <map>
+#include <set>
 #include "Cursor.h"
 using namespace std;
 
@@ -34,12 +35,14 @@ public:
 	string getWord(string coords) const;
 	bool hasWord(string word) const;
 	map<string, string> extraWords();
+	void grid();
 	static const size_t MAX_SIZE = 20;
 private:
 	int boardNumber;
 	size_t size_x, size_y;
 	vector<vector<char>> board; // Mais usado visualmente.
 	map<string, string> placedWords_Coords; // ["LCD", "Palavra"]. Guarda a informação mais necessária.
+	set<string> supMydudes;
 	Cursor cursor;
 	void Insert_in_board(string coords, string palavra); //mete
 };
