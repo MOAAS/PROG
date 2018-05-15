@@ -115,7 +115,7 @@ char displayInstructions() {
 	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
 	cout << "=========================" << endl;
 	cout << "INSTRUCTIONS:" << endl;
-	cout << "You will be asked to input a position and its respective word. until you don't want to add any extra words to the board." << endl;
+	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl;
 	cout << "Position (LCD / Ctrl-Z = stop)" << endl;
 	cout << " LCD stands for Line Column and Direction.\n Line and Column will be a letter (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical).\n Using Ctrl+Z will finish the board creation." << endl;
 	cout << "Word ( - = remove / ? = help)" << endl;
