@@ -71,8 +71,7 @@ int main() {
 		} while (!boardValid);
 		string newBoard_path = b1.saveFile(d1.filePath);
 		cout << "Board saved, as " << newBoard_path << ".\n";
-		restartCreator(); // Pergunta ao utilizador se quer recomeçar.
-		clrscr();
+		restartCreator(); // Pergunta ao utilizador se quer recomeçar. limpa a consola se for para reiniciar.
 	}
 }
 
@@ -114,7 +113,7 @@ char displayInstructions() {
 	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
 	cout << "=========================" << endl;
 	cout << "INSTRUCTIONS:" << endl;
-	cout << "You will be asked to input a position and its respective word. until you don't want to add any extra words to the board." << endl;
+	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl;
 	cout << "Position (LCD / Ctrl-Z = stop)" << endl;
 	cout << " LCD stands for Line Column and Direction.\n Line and Column will be a letter (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical).\n Using Ctrl+Z will finish the board creation." << endl;
 	cout << "Word ( - = remove / ? = help)" << endl;
@@ -191,7 +190,7 @@ string getInput_Coords(Board b1, Dictionary d1) {
 		cout << "Position ( LCD / CTRL-Z = stop ) ? ";
 		cin >> input_coords;
 		if (cin.eof()) { // Ctrl + Z. Ou se grava para mais tarde ou termina-se
-			cin.clear();
+			cin.clear(); cin.ignore();
 			char decision;
 			do { // Loop enquanto o utilizador nem diz "S" nem "F". 
 				cout << "Save board to resume later (S) or finish creation (F) ? ";
@@ -260,6 +259,7 @@ void restartCreator() {
 	} while (decision != 'Y' && decision != 'N');
 	if (decision == 'N')
 		exit(EXIT_SUCCESS);
+	else clrscr();
 }
 
 /*
@@ -311,10 +311,14 @@ void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
 	cout << endl;
 }
 
+/*
+
+*/
 bool finalCheck(Board &b1, Dictionary d1)
 {
 	map<string, string> newWords = b1.extraWords();
 	map<string, string> validWords, invalidWords;
+	cout << endl;
 	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
 	{
 		if (d1.wordExists(it->second))	//separa as palavras validas das invalidas em dois maps diferentes
