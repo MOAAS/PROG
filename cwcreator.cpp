@@ -33,7 +33,7 @@ void insert_at(string coords, string word, Board &b1);
 bool finalCheck(Board &b1, Dictionary d1);
 
 void ShowVector(vector<string> v);
-
+inline void clearBadInput();
 
 /*
 Pergunta ao utilizador o que deseja fazer, e chama as funções de construir o tabuleiro. Quando o tabuleiro for válido, pergunta ao utilizador se deseja recomeçar ou sair.
@@ -76,7 +76,7 @@ int main() {
 }
 
 /*
-Enquanto o tabuleiro não estiver cheio: chama as funçoes que pedem as coordenadas e as palavras.
+Enquanto o tabuleiro não estiver cheio: chama as funçoes que pedem as coordenadas e aas palavras.
 Quando o utilizador estiver realmente acabado (ou o tabuleiro estiver cheio), enche o tabuleiro e verifica se há palavras extra.
 string input_coords - "AaH" por exemplo. "SAVE", "FINISH" são cadeias de retorno especiais, indicam uma ordem ao programa.
 string input_word - Será qualquer palavra contida no dicionário que caiba nas coordenadas fornecidas, ou "-" (remove palavra nas coordenadas, se houver), ou "?" (dá sugestões).
@@ -124,7 +124,7 @@ char displayInstructions() {
 	cout << "2 - Resume puzzle" << endl;
 	cout << "0 - Exit" << endl << endl;
 	cout << "Option ? ";
-	char option; cin >> option; cin.clear(); cin.ignore(10000, '\n');
+	char option; cin >> option; clearBadInput();
 	return option;
 }
 /*
@@ -139,16 +139,16 @@ pair<Board, Dictionary> createPuzzle() {
 	cout << "CREATE PUZZLE" << endl;
 	cout << "--------------------" << endl;
 	do { // Loop enquanto o ficheiro for inválido
-		cout << "Dictionary file name ? "; cin >> dictFile_path; cin.clear(); cin.ignore(10000, '\n');
+		cout << "Dictionary file name ? "; cin >> dictFile_path; clearBadInput();
 		file.open(dictFile_path);
 	} while (!file.is_open());
 	file.close();
 	Dictionary d1(dictFile_path);
 	do { // Loop enquanto o input for inválido.
 		cout << "Board size (lines columns) ? ";
-		cin >> boardSizeY >> boardSizeX; cin.clear(); cin.ignore(1000, '\n');// SizeY = numero de linhas. SizeX = numero de colunas !
-	} while (boardSizeX < 0 || boardSizeY < 0 || boardSizeX > Board::MAX_SIZE || boardSizeY > Board::MAX_SIZE);
-	cout << endl << endl;
+		cin >> boardSizeY >> boardSizeX; clearBadInput(); // SizeY = numero de linhas. SizeX = numero de colunas !
+	} while (boardSizeX <= 0 || boardSizeY <= 0 || boardSizeX > Board::MAX_SIZE || boardSizeY > Board::MAX_SIZE);
+	cout << endl;
 	Board b1(boardSizeX, boardSizeY);
 	pair<Board, Dictionary> BoardDict_Pair(b1, d1); // Junta os dois e devolve
 	return BoardDict_Pair;
@@ -166,7 +166,7 @@ pair<Board, Dictionary> resumePuzzle() {
 	cout << "RESUME PUZZLE" << endl;
 	do { // Loop enquanto o ficheiro for inválido
 		file.close();
-		cout << "File name ? "; cin >> boardFile_path; cin.clear(); cin.ignore(10000, '\n');
+		cout << "Board file name ? "; cin >> boardFile_path; clearBadInput();
 		file.open(boardFile_path);
 	} while (!file.good());
 	getline(file, dictFile_path); // tira a primeira linha -> nome do ficheiro do dicionario
@@ -190,11 +190,11 @@ string getInput_Coords(Board b1, Dictionary d1) {
 		cout << "Position ( LCD / CTRL-Z = stop ) ? ";
 		cin >> input_coords;
 		if (cin.eof()) { // Ctrl + Z. Ou se grava para mais tarde ou termina-se
-			cin.clear(); cin.ignore();
+			cin.clear();
 			char decision;
 			do { // Loop enquanto o utilizador nem diz "S" nem "F". 
 				cout << "Save board to resume later (S) or finish creation (F) ? ";
-				cin >> decision; cin.clear(); cin.ignore(10000, '\n');
+				cin >> decision; clearBadInput();
 				decision = toupper(decision);
 				if (decision == 'F')
 					return "FINISH";
@@ -222,7 +222,10 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 	do { // Loop enquanto input inválido.
 		validWord = true;
 		cout << "Word ( - = remove / ? = help ) ? ";
-		cin >> input_word; cin.clear(); cin.ignore(10000, '\n');
+		cin >> input_word;
+		if (cin.eof())
+			cin.clear();
+		else cin.ignore(10000, '\n');
 		stringUpper(input_word);
 		bool exists = d1.wordExists(input_word);
 		if (!exists && input_word != "-" && input_word != "?") { // Palavra não existe.
@@ -254,7 +257,7 @@ void restartCreator() {
 	cout << endl;
 	do { // Loop enquanto input não for "Y" nem "N".
 		cout << "Do you want to restart? (Y/N) ";
-		cin >> decision; cin.clear(); cin.ignore(10000, '\n');
+		cin >> decision; clearBadInput();
 		decision = toupper(decision); // Para maiúscula
 	} while (decision != 'Y' && decision != 'N');
 	if (decision == 'N')
@@ -286,8 +289,11 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 	cout << "Fecthing suggested words..." << endl;
 	for (int i = c1.MainCoord(); i < b1.CoordLimit(c1); i++) { // c1.MainCoord() = coordenada na direção em que está. CoordLimit(c1) = coordenada máxima do board na direção de c1.
 		string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
-		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as wildcards associadas ao wordSize atual, com as coordenadas fornecidas.
-		sugestoes.insert(sugestoes.end(), wildcards.begin(), wildcards.end()); // Insere essas wildcards no vetor.
+		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
+		for (int i = 0; i < wildcards.size(); i++) { // Insere essas palavras no vetor, se não estiverem no board!
+			if (!b1.hasWord(wildcards[i]))
+				sugestoes.push_back(wildcards[i]);
+		} 
 		wordSize++;
 	}
 	if (sugestoes.empty())
@@ -309,6 +315,15 @@ void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
 	for (int i = 0; i < v.size(); i++)
 		cout << v[i] << " ";
 	cout << endl;
+}
+
+inline void clearBadInput() {
+	if (cin.eof())
+		cin.clear();
+	else {
+		cin.clear();
+		cin.ignore(10000, '\n');
+	}
 }
 
 /*
@@ -342,3 +357,4 @@ bool finalCheck(Board &b1, Dictionary d1)
 		return true;
 	}
 }
+
