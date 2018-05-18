@@ -33,7 +33,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords);
 
 string openBoard(Board &solutionBoard, Board &emptyBoard);
 void addExtraWords(Board &b1);
-void clearBadInput();
+inline void clearBadInput();
 void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken);
 
 void displayInstructions();
@@ -55,11 +55,12 @@ int main() {
 		flag boardSolved = false;
 		bool easyMode = getInput_Difficulty();
 		bool showCorrectGuesses = false;
-		cout << endl << "Clock starts now!" << endl;
+		cout << "Clock starts now!" << endl;
 		p1.startClock();
 		do {
 			b1.display();
 			displayClues(clues, solutionB1, b1, showCorrectGuesses || easyMode);
+			cout << "Clues used so far: " << p1.getNumClues() << endl << endl;
 			showCorrectGuesses = false;
 			string coords = getInput_Coords(solutionB1);
 			string word = getInput_Word(b1, solutionB1, coords);
@@ -77,17 +78,18 @@ int main() {
 			if (b1.isFull()) {
 				addExtraWords(b1);
 				b1.display();
+				displayClues(clues, solutionB1, b1, solutionB1 == b1);
 				if (solutionB1 == b1) // == compara os boards!
 					boardSolved = true;
 				else if (getInput_showCorrectGuesses()) {
 					p1.incClues();
-					showCorrectGuesses = true;					
+					showCorrectGuesses = true;
 				}
 			}
 
 		} while (!boardSolved);
 		size_t timeTaken = p1.endClock();
-		cout << "Congratulations!" << endl;
+		cout << "Congratulations! You completed the board in " << timeTaken << " seconds." << endl;
 		saveStats(solutionB1, d1, p1, timeTaken);
 		restartPlayer(); // Pergunta ao utilizador se quer recomeçar. limpa a consola se for para reiniciar.
 	}
@@ -98,7 +100,7 @@ string openBoard(Board &solutionBoard, Board &emptyBoard) { // retorna o nome do
 	ifstream file;
 	do { // Loop enquanto o ficheiro for inválido
 		file.close();
-		cout << "Board file name ? "; cin >> boardFile_path; cin.clear(); cin.ignore(10000, '\n');
+		cout << "Board file name ? "; cin >> boardFile_path; clearBadInput();
 		file.open(boardFile_path);
 	} while (!file.good());
 	getline(file, dictFile_path); // tira a primeira linha -> nome do ficheiro do dicionario
@@ -120,6 +122,7 @@ int getColor(string coords, Board solutionBoard, Board emptyBoard) {
 
 void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool showCorrectGuesses) {
 	cout << endl << "HORIZONTAL (H)" << endl;
+	int numWordsHoriz = 0, numWordsVertical = 0;
 	for (auto iter : clues) {
 		string coords = iter.first;
 		if (showCorrectGuesses)
@@ -137,11 +140,13 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
 				cout << " - " << emptyBoard.getWord(coords) << endl;
 			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
-
+			numWordsHoriz++;
 		}
 	}	
-	// O mesmo para vertical
 	setcolor(WHITE);
+	if (numWordsHoriz == 0)
+		cout << "No horizontal words." << endl;
+	// O mesmo para vertical
 	cout << endl << "VERTICAL (V)" << endl;
 	for (auto iter : clues) {
 		string coords = iter.first;
@@ -160,10 +165,12 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
 				cout << " - " << emptyBoard.getWord(coords) << endl;
 			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
-
+			numWordsVertical++;
 		}
 	}
 	setcolor(WHITE);
+	if (numWordsVertical == 0)
+		cout << "No vertical words." << endl;
 	cout << endl;
 }
 
@@ -180,6 +187,7 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 			synonym = dict.getRandomSynonym(word);
 		} while (find(givenClues.begin(), givenClues.end(), synonym) != givenClues.end());
 		clues[coords].push_back(synonym);
+		return true;
 	}
 	return false; // coordenadas não válidas. (em principio nunca acontece)
 }
@@ -289,14 +297,22 @@ void addExtraWords(Board &b1) {
 inline void clearBadInput() {
 	if (cin.eof())
 		cin.clear();
-	else cin.ignore(10000, '\n');
+	else {
+		cin.clear();
+		cin.ignore(10000, '\n');
+	}
 }
 
 void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken) {
+	size_t boardNum = solutionB1.getBoardNumber();
 	ostringstream oss;
-	string filePath = solutionB1.saveFile(dict.filePath, true);
-	ofstream file(filePath, ios::app);
-	file << endl << "Name: " << p1.getName() << " | Clues used: " << p1.getNumClues() << endl;
+	oss << "b" << setfill('0') << setw(3) << boardNum;	oss << "_p.txt"; // oss = bxxx_s.txt
+	string file_path = oss.str();
+	ifstream testFile(file_path);
+	if (!testFile)
+		solutionB1.saveFile(dict.filePath, true);
+	ofstream file(file_path, ios::app);
+	file << endl << "Name: " << p1.getName() << " | Time taken: " << timeTaken << " seconds | Clues used: " << p1.getNumClues();
 	file.close();
 }
 
@@ -312,7 +328,7 @@ void restartPlayer() {
 	cout << endl;
 	do { // Loop enquanto input não for "Y" nem "N".
 		cout << "Do you want to restart? (Y/N) ";
-		cin >> decision; cin.clear(); cin.ignore(10000, '\n');
+		cin >> decision; clearBadInput();
 		decision = toupper(decision); // Para maiúscula
 	} while (decision != 'Y' && decision != 'N');
 	if (decision == 'N')
@@ -322,9 +338,8 @@ void restartPlayer() {
 
 bool getInput_showCorrectGuesses() {
 	char decision;
-	cout << endl;
 	do { // Loop enquanto input não for "Y" nem "N".
-		cout << "The board is complete but some words still don't match the correct ones. Do you want to know which words you got wrong (Y), or would you prefer to keep trying without help (N) ?";
+		cout << "The board is complete but some words still don't match the correct ones. Do you want to know which words you got wrong (Y), or would you prefer to keep trying without help (N) ? ";
 		cout << "Note: Typing 'Y' will count as a clue. ";
 		cin >> decision; clearBadInput();
 		decision = toupper(decision); // Para maiúscula
@@ -342,10 +357,8 @@ bool getInput_Difficulty() {
 		cout << "Option: ";
 		cin >> decision; clearBadInput();
 		stringUpper(decision); // Para maiúscula
+	    cout << endl;
 	} while (decision != "EASY" && decision != "NORMAL");
 	return decision == "EASY";
 
 }
-
-
-
