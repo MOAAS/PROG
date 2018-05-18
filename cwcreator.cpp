@@ -61,14 +61,9 @@ int main() {
 			Puzzle = resumePuzzle();
 		b1 = Puzzle.first; // Puzzle é um par da forma: (board, dictionary)
 		d1 = Puzzle.second;
-		bool boardValid;
-		do {
+		bool boardValid = false;
+		while (!boardValid)
 			boardValid = boardBuilding(b1, d1);
-			if (!boardValid) {
-				b1.RefreshBoard(); // Equivalente a um unfill. (Tira os '#' postos no fim).
-				cout << "The board still has some invalid words, it cannot be finished until those are removed." << endl;
-			}
-		} while (!boardValid);
 		string newBoard_path = b1.saveFile(d1.filePath);
 		cout << "Board saved, as " << newBoard_path << ".\n";
 		restartCreator(); // Pergunta ao utilizador se quer recomeçar. limpa a consola se for para reiniciar.
@@ -86,10 +81,8 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 		string input_coords = getInput_Coords(b1, d1);
 		if (input_coords == "SAVE")
 			return true; // ou seja, board válido.
-		else if (input_coords == "FINISH") { // Utilizador disse que acabou.
-			b1.Fill();
+		else if (input_coords == "FINISH") // Utilizador disse que acabou.
 			break; // Agora vai verificar se há palavras extra.
-		}
 		string input_word = getInput_Word(b1, d1, input_coords);
 		if (input_word == "-")
 			delete_at(input_coords, b1);  // Apaga
@@ -100,6 +93,7 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 	}
 	if (finalCheck(b1, d1)) { // Se extraWords == true, as palavras novas são todas válidas
 		cout << "The board is finished!" << endl;
+		b1.Fill();
 		return true;
 	}
 	else return false; // board inválido
@@ -297,7 +291,7 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 		wordSize++;
 	}
 	if (sugestoes.empty())
-		cout << "No words found in the dictionary" << endl;
+		cout << "No words found in the dictionary." << endl;
 	else {
 		cout << "Suggested Words: ";
 		ShowVector(sugestoes);
@@ -336,25 +330,27 @@ bool finalCheck(Board &b1, Dictionary d1)
 	cout << endl;
 	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
 	{
-		if (d1.wordExists(it->second))	//separa as palavras validas das invalidas em dois maps diferentes
+		if (d1.wordExists(it->second) && !b1.hasWord(it->second))	//separa as palavras validas das invalidas em dois maps diferentes
 			validWords[it->second] = it->first;
 		else invalidWords[it->second] = it->first;
 	}
-	if (validWords.size() > 0) { //mostra as palavras novas validas
-		cout << "New Words:" << '\n';
+	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
+		if (invalidWords.size() == 1) cout << "The board still has an invalid word:\n";
+		else cout << "The board still has some invalid words:\n";
+		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
+			cout << " " << it->second << " " << it->first << "\n";
+		cout << endl << "You cannot finish creation until those words get removed." << endl;
+		return false;  //se existirem palavra invalidas
+	}
+	else if (validWords.size() > 0) { //mostra as palavras novas validas
+		if (validWords.size() == 1) cout << "This word was automatically inserted:\n";
+		else cout << "These words were automatically inserted:\n";
 		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
 			cout << it->second << " " << it->first << "\n";
 	}
-	if (invalidWords.size() > 0) {	//mostra as palavras novas invalidas
-		cout << "Invalid words:" << '\n';
-		for (auto it = invalidWords.cbegin(); it != invalidWords.cend(); it++)
-			cout << it->second << " " << it->first << "\n";
-		return false;  //se existirem palavra invalidas
-	}
-	else { //se nao existirem palavra invalidas , adiciona as palavras extra ao board
-		for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
-			b1.Insert(it->second, it->first);
-		return true;
-	}
+	cout << endl;
+	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
+		b1.Insert(it->second, it->first);
+	return true;
 }
 
