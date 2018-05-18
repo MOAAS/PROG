@@ -15,6 +15,7 @@ public:
 	Board();
 	Board(int size_x, int size_y);
 	map<string, string> getCoordsMap() const;
+	size_t getBoardNumber() const;
 	string getWildcard(string coords, size_t size);
 	string getWord(string coords) const;
 	map<string, string> extraWords();
