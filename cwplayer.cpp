@@ -32,7 +32,7 @@ string getInput_Coords(Board solutionBoard);
 string getInput_Word(Board emptyBoard, Board solutionBoard, string coords);
 
 string openBoard(Board &solutionBoard, Board &emptyBoard);
-void addExtraWords(Board &b1);
+void addValidExtraWords(Board &b1, Board solutionBoard);
 inline void clearBadInput();
 void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken);
 
@@ -73,10 +73,13 @@ int main() {
 			}
 			else if (word == "") // ctrl + z 
 				continue; // proximo ciclo
-			else b1.Insert(word, coords);
+			else {
+				b1.Insert(word, coords);
+				addValidExtraWords(b1, solutionB1);
+			}
 			// BOARD CHEIO!
 			if (b1.isFull()) {
-				addExtraWords(b1);
+				//addValidExtraWords(b1, solutionB1);
 				b1.display();
 				displayClues(clues, solutionB1, b1, solutionB1 == b1);
 				if (solutionB1 == b1) // == compara os boards!
@@ -288,10 +291,14 @@ string getInput_PlayerName() {
 
 //
 
-void addExtraWords(Board &b1) {
+void addValidExtraWords(Board &b1, Board solutionBoard) {
 	map<string, string> newWords = b1.extraWords();
-	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
-		b1.Insert(it->second, it->first);
+	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) {
+		string coords = it->first;
+		string word = it->second;
+		if (solutionBoard.getWord(coords).size() == word.size())
+			b1.Insert(word, coords);
+	}
 }
 
 inline void clearBadInput() {
