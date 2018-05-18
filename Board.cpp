@@ -172,7 +172,7 @@ string Board::saveFile(string dict_path, bool is_StatFile) {
 	ostringstream oss;
 	oss << "b" << setfill('0') << setw(3) << boardNumber;
 	if (is_StatFile)
-		oss << "_s";
+		oss << "_p";
 	oss << ".txt"; // oss = bxxx.txt
 	ofstream file_dest(oss.str());
 	file_dest << dict_path << endl << endl;
@@ -353,8 +353,8 @@ map<string, string> Board::extraWords() {
 void Board::grid()
 {
 	string CoordsLCD;
-	for (int i = 0; i < size_x; i++) {
-		for (int j = 0; j < size_y; j++) {
+	for (int i = 0; i < size_y; i++) {
+		for (int j = 0; j < size_x; j++) {
 			CoordsLCD = { (char)(i + 'A'), (char)(j + 'a'), 'H' };
 			if (board[j][i] == '#')
 				blackCells_Coords.insert(CoordsLCD);
@@ -366,6 +366,11 @@ void Board::grid()
 
 map<string, string> Board::getCoordsMap() const {
 	return placedWords_Coords;
+}
+
+size_t Board::getBoardNumber() const
+{
+	return boardNumber;
 }
 
 bool Board::operator==(const Board & right) {
