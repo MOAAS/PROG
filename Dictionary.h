@@ -13,6 +13,7 @@ public:
 	void display() const;
 	vector<string> getWildcardMatches(string wildcardWord) const;
 	string getRandomSynonym(string word) const;
+	size_t numSynonyms(string word);
 	string filePath;
 private:
 	map<string, vector<string>> words;

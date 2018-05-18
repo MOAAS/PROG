@@ -30,6 +30,7 @@ void Dictionary::load(string filePath) {
 	string line, keyWord, synonym; // Variaveis auxiliares.
 	ifstream file(filePath);
 	if (file.is_open()) { 
+		cout << "Loading dictionary... ";
 		while (getline(file, line)) { // Retira uma linha do ficheiro, guarda em line.
 			if (!lineValid(line))
 				continue;
@@ -40,6 +41,7 @@ void Dictionary::load(string filePath) {
 				words[keyWord].push_back(synonym); // Coloca no vetor associado a keyWord.
 			}
 		}
+		cout << "Done." << endl;
 		this->filePath = filePath;
 	}
 	else { // Se o ficheiro nao abrir
@@ -80,6 +82,12 @@ string Dictionary::getRandomSynonym(string word) const {
 		}
 	}
 	return "";
+}
+
+
+size_t Dictionary::numSynonyms(string word)
+{
+	return words[word].size();
 }
 
 bool lineValid(string &line) { // Remove ':' e ';' de line. Retorna falso se a linha não for válida.
