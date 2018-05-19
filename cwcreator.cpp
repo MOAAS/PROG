@@ -213,6 +213,7 @@ bool exists - auxiliar. indica se o input existe no dicionario.
 string getInput_Word(Board b1, Dictionary d1, string coords) {
 	string input_word;
 	flag validWord;
+	string currentWord = b1.getWord(coords);
 	do { // Loop enquanto input inválido.
 		validWord = true;
 		cout << "Word ( - = remove / ? = help ) ? ";
@@ -229,6 +230,14 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 		else if (exists && b1.hasWord(input_word)) { // Palavra existe, mas board já a tem.
 			cout << "The word " << input_word << " is already in the board!" << endl;
 			validWord = false;
+		}
+		else if (exists && currentWord != "") //Posicao do board ja ocupada
+		{
+			if (!b1.replaceable(coords, currentWord, input_word))  //nao pode ser substituida
+			{
+				cout << "Invalid Replacement" << endl;
+				validWord = false;
+			}
 		}
 		else if (exists && !b1.Verify(coords, input_word)) { // Palavra existe, mas não pode ser colocada.
 			cout << "The word " << input_word << " does not fit in the board!" << endl;
