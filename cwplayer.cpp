@@ -2,7 +2,7 @@
 #include "dictionary.h"
 #include "consolecolors.h"
 #include "board.h"
-#include "Player.h"
+#include "player.h"
 #include "Cursor.h"
 #include <string>
 #include <fstream>
@@ -51,12 +51,6 @@ bool easyMode - indica dificuldade
 bool showCorrectGuesses - True: mostram-se a verde as respostas certas e vermelho as erradas
 */
 int main() {
-	Dictionary d1;
-	d1.load("dicsyn.txt");
-	Board b1;
-	b1.loadFile("b700.txt");
-	b1.display();
-	cout << b1.getWildcard("DbH", 3) << endl;
 	srand((unsigned int)time(NULL));
 	while (true) {
 		Board solutionB1, b1; // b1 = board a ser resolvido.
