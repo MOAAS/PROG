@@ -1,25 +1,24 @@
 #pragma once
 #include <string>
 #include <ctime>
-#include <map>
-#include <vector>
 using namespace std;
 class Player
 {
 public:
-	Player();
-	Player(string name);
+	Player(); // inicializa com normalMode = true, numClues = 0.
+	Player(string name); // inicializa com um nome também.
 	string getName() const;
-	size_t getNumClues();
+	size_t getNumClues() const;
+	bool isNormalMode() const;
 	void setName(string name);
-	void incClues();
+	void setEasyMode();
+	void incClues(); // soma 1 ao número de clues
 	void startClock();
-	size_t endClock();
+	size_t endClock(); // retorna o tempo gasto
 private:
+	bool normalMode; // false = easy mode.
 	string name;
 	size_t startTime;
 	size_t endTime;
 	size_t numClues;
-	map<string, vector<string>> knownSynonyms;
 };
-
