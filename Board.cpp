@@ -168,11 +168,9 @@ void Board::Fill() // Enche as casas vazias com '#'
 	}
 }
 
-string Board::saveFile(string dict_path, bool is_StatFile) {
+string Board::saveFile(string dict_path) {
 	ostringstream oss;
 	oss << "b" << setfill('0') << setw(3) << boardNumber;
-	if (is_StatFile)
-		oss << "_p";
 	oss << ".txt"; // oss = bxxx.txt
 	ofstream file_dest(oss.str());
 	file_dest << dict_path << endl << endl;
