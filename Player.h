@@ -9,12 +9,13 @@ public:
 	Player(string name); // inicializa com um nome também.
 	string getName() const;
 	size_t getNumClues() const;
-	bool isNormalMode() const;
+	size_t getTimeTaken() const; // retorna o tempo gasto
+	bool isNormalMode() const; 
 	void setName(string name);
 	void setEasyMode();
 	void incClues(); // soma 1 ao número de clues
 	void startClock();
-	size_t endClock(); // retorna o tempo gasto
+	void endClock(); 
 private:
 	bool normalMode; // false = easy mode.
 	string name;
@@ -22,3 +23,4 @@ private:
 	size_t endTime;
 	size_t numClues;
 };
+
