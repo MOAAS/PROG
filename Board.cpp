@@ -88,6 +88,18 @@ void Board::Insert(string word, string coords) {
 	RefreshBoard(); // atualiza o board
 }
 
+bool Board::replaceable(string coords, string oldword, string newword)
+{
+		Delete(coords);
+		if (!Verify(coords, newword))
+		{
+			Insert(oldword, coords);
+			return false;
+		}
+		Insert(oldword, coords);
+		return true;
+}
+
 bool Board::Delete(string coords) // Recebe uma string no formato LcD e apaga a palavra que começa nessa casa.
 {
 	if (placedWords_Coords.find(coords) == placedWords_Coords.end())
