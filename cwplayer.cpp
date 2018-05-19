@@ -15,11 +15,10 @@
 #include <utility>
 #include <ctime>
 using namespace std;
-
 typedef map<string, vector<string>> cluemap; // ["AaH", "help"]
 typedef bool flag;
 
-int getColor(string coords, Board solutionBoard, Board emptyBoard);
+int getDisplayColor(string coords, Board solutionBoard, Board emptyBoard);
 void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool showCorrectGuesses);
 bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionary dict);
 cluemap loadRandomClues(Board solutionBoard, Dictionary dict);
@@ -34,13 +33,23 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords);
 string openBoard(Board &solutionBoard, Board &emptyBoard);
 void addValidExtraWords(Board &b1, Board solutionBoard);
 inline void clearBadInput();
-void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken);
+void saveStats(Board solutionB1, Player p1);
 
 void displayInstructions();
 void restartPlayer();
 bool getInput_showCorrectGuesses();
 bool getInput_Difficulty();
 
+/*
+Carrega um Board, copia-o para outro e esvazia as palavras. Carrega o dicionário. Cria um jogador. Carrega um sinónimo para cada palavra. Enquanto o tabuleiro não estiver resolvido, pede ao utilizador coordenadas e uma palavra (ou se quer uma pista ou se quer remover), coloca-a no sítio. Quando o tabuleiro estiver cheio verifica se está correto. Se sim, guarda o tempo gasto e grava a informação do jogador num ficheiro.
+
+Board solutionB1 - board com a solução. 
+Board b1 - board a ser resolvido
+cluemap clues - map<string, vector<string>> com as coordenadas das respostas e alguns sinónimos (clues)
+flag boardSolved - indica se o tabuleiro já foi resolvido
+bool easyMode - indica dificuldade
+bool showCorrectGuesses - True: mostram-se a verde as respostas certas e vermelho as erradas
+*/
 int main() {
 	srand((unsigned int)time(NULL));
 	while (true) {
@@ -48,12 +57,13 @@ int main() {
 		Dictionary d1;
 		Player p1;
 		displayInstructions();
-		p1.setName(getInput_PlayerName());
-		string dictFile_path = openBoard(solutionB1, b1);
+		p1.setName(getInput_PlayerName()); // Pede o nome do utilizador
+		string dictFile_path = openBoard(solutionB1, b1); // open board abre solutionB1 e b1.
 		d1.load(dictFile_path);
 		cluemap clues = loadRandomClues(solutionB1, d1);
 		flag boardSolved = false;
 		bool easyMode = getInput_Difficulty();
+		if (easyMode) p1.setEasyMode();
 		bool showCorrectGuesses = false;
 		cout << "Clock starts now!" << endl;
 		p1.startClock();
@@ -84,6 +94,8 @@ int main() {
 				displayClues(clues, solutionB1, b1, solutionB1 == b1);
 				if (solutionB1 == b1) // == compara os boards!
 					boardSolved = true;
+				else if (easyMode)
+					continue;
 				else if (getInput_showCorrectGuesses()) {
 					p1.incClues();
 					showCorrectGuesses = true;
@@ -91,52 +103,46 @@ int main() {
 			}
 
 		} while (!boardSolved);
-		size_t timeTaken = p1.endClock();
-		cout << "Congratulations! You completed the board in " << timeTaken << " seconds." << endl;
-		saveStats(solutionB1, d1, p1, timeTaken);
+		p1.endClock();
+		cout << "Congratulations! You completed the board in " << p1.getTimeTaken() << " seconds." << endl;
+		saveStats(solutionB1, p1);
 		restartPlayer(); // Pergunta ao utilizador se quer recomeçar. limpa a consola se for para reiniciar.
 	}
 }
 
-string openBoard(Board &solutionBoard, Board &emptyBoard) { // retorna o nome do ficheiro dicionario.
-	string boardFile_path, dictFile_path;
-	ifstream file;
-	do { // Loop enquanto o ficheiro for inválido
-		file.close();
-		cout << "Board file name ? "; cin >> boardFile_path; clearBadInput();
-		file.open(boardFile_path);
-	} while (!file.good());
-	getline(file, dictFile_path); // tira a primeira linha -> nome do ficheiro do dicionario
-	solutionBoard.loadFile(boardFile_path);
-	emptyBoard = solutionBoard;
-	emptyBoard.grid();
-	return dictFile_path;
-}
 
-// clues
 
-int getColor(string coords, Board solutionBoard, Board emptyBoard) {
-	if (emptyBoard.getWord(coords) == "")
+// Recebe as coordenadas, a solução e a tentativa do utilizador. Retorna verde se a tentativa for correta, vermelha se for errada. Branco se não estiver nenhuma palavra
+int getDisplayColor(string coords, Board solutionBoard, Board emptyBoard) {
+	if (emptyBoard.getWord(coords) == "") // Se não houver palavra nas cordenadas.
 		return WHITE;
-	else if (solutionBoard.getWord(coords) == emptyBoard.getWord(coords))
+	else if (solutionBoard.getWord(coords) == emptyBoard.getWord(coords)) // Se solução for correta.
 		return LIGHTGREEN;
 	else return LIGHTRED;
 }
 
+/*
+Mostra as coordenadas e as pistas que há, primeiro as Horizontais e depois as Verticais. Se showCorrectGuesses == true, mostra as respostas certas a verde e as erradas a vermelho. Se não, mostra as preenchidas a amarelo. As não preenchidas ficam sempre a branco. Mostra tambem o tamanho das respostas e as letras que já estão no tabuleiro (restrições). 
+
+int numWordsHoriz = 0, numWordsVertical = 0 - São apenas contadores das palavras horizontais e verticais.
+size_t wordSize - tamanho da palavra correta
+string wildCard - para essas coordenadas: pontos de interrogação/letras dependendo se a casa está vazia ou não. (ex: "I??A?")
+*/
 void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool showCorrectGuesses) {
 	cout << endl << "HORIZONTAL (H)" << endl;
 	int numWordsHoriz = 0, numWordsVertical = 0;
-	for (auto iter : clues) {
-		string coords = iter.first;
+	for (auto iter : clues) { // Percorre clues
+		string coords = iter.first; // coordenadas para esta iteração
+		vector<string> synonyms = iter.second; // sinónimos para estas coordenadas
 		if (showCorrectGuesses)
-			setcolor(getColor(coords, solutionBoard, emptyBoard)); 
+			setcolor(getDisplayColor(coords, solutionBoard, emptyBoard)); 
 		else if (emptyBoard.getWord(coords) != "") // Se já houver palavra nessas coordenadas!
 			setcolor(YELLOW);
 		else setcolor(WHITE);
-		if (iter.first[2] == 'H') { // iter.first = AaH.
-			cout << iter.first.substr(0,2) << ": ";
-			for (int i = 0; i < iter.second.size(); i++)
-				cout << iter.second[i] << " ";
+		if (coords[2] == 'H') {  // Se forem coordenadas com direçao vertical
+			cout << coords.substr(0,2) << ": ";
+			for (int i = 0; i < synonyms.size(); i++)
+				cout << synonyms[i] << " ";
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
@@ -151,17 +157,18 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 		cout << "No horizontal words." << endl;
 	// O mesmo para vertical
 	cout << endl << "VERTICAL (V)" << endl;
-	for (auto iter : clues) {
-		string coords = iter.first;
+	for (auto iter : clues) {  // Percorre clues
+		string coords = iter.first; // coordenadas para esta iteração
+		vector<string> synonyms = iter.second; // sinónimos para estas coordenadas
 		if (showCorrectGuesses)
-			setcolor(getColor(coords, solutionBoard, emptyBoard));
+			setcolor(getDisplayColor(coords, solutionBoard, emptyBoard));
 		else if (emptyBoard.getWord(coords) != "") // Se já houver palavra nessas coordenadas!
 			setcolor(YELLOW);
 		else setcolor(WHITE);
-		if (iter.first[2] == 'V') {
-			cout << iter.first.substr(0, 2) << ": ";
-			for (int i = 0; i < iter.second.size(); i++)
-				cout << iter.second[i] << " ";
+		if (coords[2] == 'V') { // Se forem coordenadas com direçao vertical
+			cout << coords.substr(0, 2) << ": ";
+			for (int i = 0; i < synonyms.size(); i++)
+				cout << synonyms[i] << " ";
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
@@ -177,17 +184,26 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 	cout << endl;
 }
 
+/*
+Obtem a palavra correta, obtem as pistas já fornecidas e o número de sinónimos que há para a palavra correta. Verifica que ainda há sinónimos suficientes, vai obtendo um sinónimo à sorte até que se obtenha um que não se tenha ainda fornecido.
+
+string answer - resposta correta
+vector<string> givenClues - pistas já fornecidas
+size_t nClues - número de pistas já fornecidas para a palavra
+size_t nSynonyms - número de sinónimos existentes para a palavra
+string synonym - sinónimo que se vai acrescentar
+*/
 bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionary dict) {
-	string word = solutionBoard.getWord(coords);
-	if (word != "") {
+	string answer = solutionBoard.getWord(coords);
+	if (answer != "") {
 		vector<string> givenClues = clues[coords];
 		size_t nClues = clues[coords].size();
-		size_t nSynonyms = dict.numSynonyms(word);
+		size_t nSynonyms = dict.numSynonyms(answer);
 		if (nClues >= nSynonyms) // Já não há mais sinónimos
 			return false;
 		string synonym;
 		do {
-			synonym = dict.getRandomSynonym(word);
+			synonym = dict.getRandomSynonym(answer);
 		} while (find(givenClues.begin(), givenClues.end(), synonym) != givenClues.end());
 		clues[coords].push_back(synonym);
 		return true;
@@ -195,6 +211,14 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 	return false; // coordenadas não válidas. (em principio nunca acontece)
 }
 
+/*
+Vai buscar o mapa de coordenadas das solução. Por cada palavra lá obtém-se um sinónimo.
+
+cluemap clues - mapa de pistas a devolver (map<string, vector<string>>)
+string coords - coordenadas
+string word - palavra
+string synonym - sinónimo aleatório a acrescentar ao vetor correspondente a coords em clues.
+*/
 cluemap loadRandomClues(Board solutionBoard, Dictionary dict) {
 	cluemap clues;
 	map<string, string> coordsMap = solutionBoard.getCoordsMap();
@@ -206,14 +230,21 @@ cluemap loadRandomClues(Board solutionBoard, Dictionary dict) {
 	return clues;
 }
 
-// inserir remover alterar
-
+// Apaga a palavra em coords de b1.
 void delete_at(string coords, Board &b1) {
 	string deleted_word = b1.getWord(coords);
 	if (b1.Delete(coords)) // Tenta apagar
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
+/* 
+Verifica se é possivel colocar uma palavra em cima de outra num dado Board. retorna true se sim, false se não.
+
+string coords - coordenadas
+string oldword - palavra a mudar
+string newword - palavra nova
+Board emptyBoard - tabuleiro a ser resolvido
+*/
 bool replaceable(string coords, string oldword, string newword, Board emptyBoard)
 {
 	emptyBoard.Delete(coords);
@@ -225,8 +256,21 @@ bool replaceable(string coords, string oldword, string newword, Board emptyBoard
 	return true;
 }
 
-// receber input 
+// Funçoes que recebem input: Loops até o input ser válido.
 
+// Recebe nome do jogador
+string getInput_PlayerName() {
+	string name;
+	do {
+		cin.clear();
+		cout << "What's your name? ";
+		getline(cin, name);
+	} while (cin.eof());
+	cout << "Hello " << name << "!\n\n";
+	return name;
+}
+
+// Recebe coordenadas
 string getInput_Coords(Board solutionBoard) {
 	string input_coords;
 	flag validCoords;
@@ -244,12 +288,19 @@ string getInput_Coords(Board solutionBoard) {
 	return input_coords;
 }
 
+/*
+Recebe uma palavra para colocar nas coordenadas (coords), ou indicação para remover  uma palavra, ou acrescentar uma pista. Verifica se a palavra tem o tamanho certo, se pode subtituir caso esteja lá uma já, se cabe no tabuleiro, ou se existem palavras para apagar (no caso de se responder "-").
+
+flag validWord - indica se input válido
+string realWord - soluçao para essas coords
+string currentWord - palavra que está no tabuleiro que o utilizador preenche
+*/
 string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	string input_word;
 	flag validWord;
 	do { // Loop enquanto input inválido.
 		validWord = false; // palavra inválida até prova em contrário
-		cout << "Word ( - = remove / ? = clue / Ctrl + Z = return ) ? ";
+		cout << "Word ( - = remove / ? = clue / Ctrl-Z = return ) ? ";
 		cin >> input_word; 
 		if (cin.eof()) {
 			cin.clear();
@@ -278,29 +329,44 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	return input_word;
 }
 
-string getInput_PlayerName() {
-	string name;
-	do {
-		cin.clear();
-		cout << "What's your name? ";
-		getline(cin, name);
-	} while (cin.eof());
-	cout << "Hello " << name << "!\n\n";
-	return name;
+
+/*
+Pede o nome de um ficheiro de tabuleiro. Carrega solutionBoard, copia-o para emptyBoard (board a ser resolvivo). Emptyboard perde todas as palavras, ficando apenas com as células pretas. Retorna o nome do ficheiro dicionario.
+
+string boardFile_path, dictFile_path - nome dos ficheiros
+ifstream file - ficheiro Board
+*/
+string openBoard(Board &solutionBoard, Board &emptyBoard) {
+	string boardFile_path, dictFile_path;
+	ifstream file;
+	do { // Loop enquanto o ficheiro for inválido
+		file.close();
+		cout << "Board file name ? "; cin >> boardFile_path; clearBadInput();
+		file.open(boardFile_path);
+	} while (!file.good());
+	getline(file, dictFile_path); // tira a primeira linha -> nome do ficheiro do dicionario
+	solutionBoard.loadFile(boardFile_path); 
+	emptyBoard = solutionBoard;
+	emptyBoard.grid(); // Ficam apenas as células pretas (perde as palavras)
+	return dictFile_path;
 }
 
-//
+/*
+Recebe um tabuleiro que está a ser preenchido pelo utilizador e a solução. Vê se alguma palavra que foi introduzida acidentalmente pelo utilizador realmente corresponde a uma entrada no tabuleiro solução, ou seja, se começa nalguma casa válida e se tem o tamanho correto. Adiciona todas essas palavras novas válidas. (Mesmo que já estejam no tabuleiro visual, o programa ainda não conta estas palavras)
 
+map<string, string> newWords - todas as palavras que estão no tabuleiro mas não estão no map de palavras
+*/
 void addValidExtraWords(Board &b1, Board solutionBoard) {
 	map<string, string> newWords = b1.extraWords();
-	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) {
-		string coords = it->first;
+	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) { // percorre o mapa de palavras novas
+		string coords = it->first; 
 		string word = it->second;
-		if (solutionBoard.getWord(coords).size() == word.size())
-			b1.Insert(word, coords);
+		if (solutionBoard.getWord(coords).size() == word.size()) // se a palavra que está no tabuleiro com essas coordenadas tem tamanho igual à palavra nova, é válida.
+			b1.Insert(word, coords); // insere no tabuleiro 
 	}
 }
 
+//Função auxiliar, para melhorar experiência do utilizador. Se input for Ctrl-Z, limpa-se o buffer. Se não, ignora-se toda a linha.
 inline void clearBadInput() {
 	if (cin.eof())
 		cin.clear();
@@ -310,26 +376,33 @@ inline void clearBadInput() {
 	}
 }
 
-void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken) {
-	size_t boardNum = solutionB1.getBoardNumber();
+/*
+Recebe a solução, o dicionário, o jogador e o tempo gasto. Guarda num ficheiro "bxxx_p.txt" o tabuleiro (se o ficheiro não existir) e acrescenta no fim uma linha mostrando o Nome do jogador, o Tempo que ele demorou a resolver e o número de pistas usadas. Se estiver a jogar em modo fácil acrescenta também essa informação.
+
+size_t boardNum - número do tabuleiro
+ostringstream oss - guarda "bxxx_p.txt"
+string file_path = oss.str() - guarda o ficheiro onde se irá guardar
+*/
+void saveStats(Board solutionB1, Player p1) {
+	size_t boardNum = solutionB1.getBoardNumber(); // obtém o número do tabuleiro
 	ostringstream oss;
-	oss << "b" << setfill('0') << setw(3) << boardNum;	oss << "_p.txt"; // oss = bxxx_s.txt
+	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_s.txt"; // oss = bxxx_s.txt
 	string file_path = oss.str();
-	ifstream testFile(file_path);
-	if (!testFile)
-		solutionB1.saveFile(dict.filePath, true);
-	ofstream file(file_path, ios::app);
-	file << endl << "Name: " << p1.getName() << " | Time taken: " << timeTaken << " seconds | Clues used: " << p1.getNumClues();
+	ofstream file(file_path, ios::app); // abre o ficheiro no final, depois acrescenta a informação.
+	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues(); 
+	if (!p1.isNormalMode())
+		file << " | EASY MODE";
+	file << endl;
 	file.close();
 }
 
-// UI
-
+// Mostra instruções (WIP)
 void displayInstructions() {
 	cout << "CROSSWORDS PUZZLE PLAYER" << endl;
 	cout << "=========================" << endl;
 }
 
+// Pergunta ao utilizador se deseja recomeçar. Se sim, limpa a consola. Se não, fecha o programa.
 void restartPlayer() {
 	char decision;
 	cout << endl;
@@ -343,6 +416,7 @@ void restartPlayer() {
 	else clrscr();
 }
 
+// Pergunta ao utilizador se deseja mostrar quais respostas estão mal. Fazê-lo gasta uma pista. (Chamada quando o tabuleiro está completo com palavras mal) 
 bool getInput_showCorrectGuesses() {
 	char decision;
 	do { // Loop enquanto input não for "Y" nem "N".
@@ -354,6 +428,7 @@ bool getInput_showCorrectGuesses() {
 	return decision == 'Y';
 }
 
+// Pergunta ao utilizador a dificuldade com que quer jogar. Só pode ser easy ou normal (case-insensitive).
 bool getInput_Difficulty() {
 	string decision;
 	cout << endl;
@@ -367,5 +442,4 @@ bool getInput_Difficulty() {
 	    cout << endl;
 	} while (decision != "EASY" && decision != "NORMAL");
 	return decision == "EASY";
-
 }
