@@ -278,26 +278,41 @@ void delete_at(string coords, Board &b1) {
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
-/*
 Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wilcard é usada a função getwildcardmatches do trabalho 1.
+A exceção é já haver uma palavra nas coordenadas fornecidas. Nesse caso apenas se faz a wildcard para o tamanho dessa palavra (apaga-se a palavra antes para garantir que as únicas restrições são as letras das outras palavras.
+
 vector<string> sugestoes - vetor a retornar. conterá todas as sugestoes
 Cursor c1 - cursor auxiliar.
 string wildcard - Exemplo, "P???R".
 vector<string> wildcards - todas as possibilidades para wilcard
+string currentWord - palavra que está nas coordenadas
 */
 void displaySuggestions(Board b1, Dictionary d1, string coords) {
+	cout << "Fetching suggested words..." << endl;
 	vector<string> sugestoes;
 	Cursor c1; c1.moveTo(coords); // move o cursor até as coordenadas.
-	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
-	cout << "Fecthing suggested words..." << endl;
-	for (int i = c1.MainCoord(); i < b1.CoordLimit(c1); i++) { // c1.MainCoord() = coordenada na direção em que está. CoordLimit(c1) = coordenada máxima do board na direção de c1.
-		string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
+	string currentWord = b1.getWord(coords);
+	if (currentWord != "") { // se já estiver uma palavra lá.
+		b1.Delete(coords); // apaga a palavra
+		string wildcard = b1.getWildcard(coords, currentWord.size()); // obtém a wildcard para aquele tamanho.
+		b1.Insert(currentWord, coords); // reinsere a palavra
 		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
 		for (int i = 0; i < wildcards.size(); i++) { // Insere essas palavras no vetor, se não estiverem no board!
 			if (!b1.hasWord(wildcards[i]))
 				sugestoes.push_back(wildcards[i]);
-		} 
-		wordSize++;
+		}
+	}
+	else {
+		int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
+		for (int i = c1.MainCoord(); i < b1.CoordLimit(c1); i++) { // c1.MainCoord() = coordenada na direção em que está. CoordLimit(c1) = coordenada máxima do board na direção de c1.
+			string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
+			vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
+			for (int j = 0; j < wildcards.size(); j++) { // Insere essas palavras no vetor, se não estiverem no board!
+				if (!b1.hasWord(wildcards[j]))
+					sugestoes.push_back(wildcards[j]);
+			}
+			wordSize++;
+		}
 	}
 	if (sugestoes.empty())
 		cout << "No words found in the dictionary." << endl;
@@ -306,7 +321,6 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 		ShowVector(sugestoes);
 	}
 }
-
 
 void insert_at(string coords, string word, Board &b1) { // Insere...
 	b1.Insert(word, coords);
