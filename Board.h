@@ -37,7 +37,7 @@ public:
 	void Fill();
 	void grid();
 	void loadFile(string file_path);
-	string saveFile(string dict_path, bool is_StatFile = false);
+	string saveFile(string dict_path);
 	bool operator==(const Board& right);
 	static const size_t MAX_SIZE = 20;
 private:
