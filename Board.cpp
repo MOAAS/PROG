@@ -259,7 +259,7 @@ string Board::getWildcard(string coords, size_t size) { //  Recebe coordenadas (
 		if (ShowChar() == '.')
 			wildcard.append("?"); // Adiciona a string de retorno o carater '?'.
 		else if (ShowChar() == '#')
-			break;
+			return "";
 		else wildcard.append(1, ShowChar()); // Adiciona a string de retorno o carater.
 		cursor++;
 	}
