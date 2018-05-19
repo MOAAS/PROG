@@ -15,7 +15,6 @@
 #include <utility>
 #include <ctime>
 using namespace std;
-
 typedef map<string, vector<string>> cluemap; // ["AaH", "help"]
 typedef bool flag;
 
@@ -34,7 +33,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords);
 string openBoard(Board &solutionBoard, Board &emptyBoard);
 void addValidExtraWords(Board &b1, Board solutionBoard);
 inline void clearBadInput();
-void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken);
+void saveStats(Board solutionB1, Player p1);
 
 void displayInstructions();
 void restartPlayer();
@@ -64,6 +63,7 @@ int main() {
 		cluemap clues = loadRandomClues(solutionB1, d1);
 		flag boardSolved = false;
 		bool easyMode = getInput_Difficulty();
+		if (easyMode) p1.setEasyMode();
 		bool showCorrectGuesses = false;
 		cout << "Clock starts now!" << endl;
 		p1.startClock();
@@ -94,6 +94,8 @@ int main() {
 				displayClues(clues, solutionB1, b1, solutionB1 == b1);
 				if (solutionB1 == b1) // == compara os boards!
 					boardSolved = true;
+				else if (easyMode)
+					continue;
 				else if (getInput_showCorrectGuesses()) {
 					p1.incClues();
 					showCorrectGuesses = true;
@@ -101,9 +103,9 @@ int main() {
 			}
 
 		} while (!boardSolved);
-		size_t timeTaken = p1.endClock();
-		cout << "Congratulations! You completed the board in " << timeTaken << " seconds." << endl;
-		saveStats(solutionB1, d1, p1, timeTaken);
+		p1.endClock();
+		cout << "Congratulations! You completed the board in " << p1.getTimeTaken() << " seconds." << endl;
+		saveStats(solutionB1, p1);
 		restartPlayer(); // Pergunta ao utilizador se quer recomeçar. limpa a consola se for para reiniciar.
 	}
 }
@@ -298,7 +300,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	flag validWord;
 	do { // Loop enquanto input inválido.
 		validWord = false; // palavra inválida até prova em contrário
-		cout << "Word ( - = remove / ? = clue / Ctrl + Z = return ) ? ";
+		cout << "Word ( - = remove / ? = clue / Ctrl-Z = return ) ? ";
 		cin >> input_word; 
 		if (cin.eof()) {
 			cin.clear();
@@ -379,21 +381,18 @@ Recebe a solução, o dicionário, o jogador e o tempo gasto. Guarda num ficheir
 
 size_t boardNum - número do tabuleiro
 ostringstream oss - guarda "bxxx_p.txt"
-string file_path = oss.str() - ou seja guarda o ficheiro onde se irá guardar
-ifstream testFile - para testar se já existe.
+string file_path = oss.str() - guarda o ficheiro onde se irá guardar
 */
-void saveStats(Board solutionB1, Dictionary dict, Player p1, size_t timeTaken) {
+void saveStats(Board solutionB1, Player p1) {
 	size_t boardNum = solutionB1.getBoardNumber(); // obtém o número do tabuleiro
 	ostringstream oss;
-	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_p.txt"; // oss = bxxx_p.txt
+	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_s.txt"; // oss = bxxx_s.txt
 	string file_path = oss.str();
-	ifstream testFile(file_path);
-	if (!testFile)
-		solutionB1.saveFile(dict.filePath, true) ; // se não existir guarda o tabuleiro, (bool isStatFile = true) em modo stat file.
 	ofstream file(file_path, ios::app); // abre o ficheiro no final, depois acrescenta a informação.
-	file << endl << "Name: " << p1.getName() << " | Time taken: " << timeTaken << " seconds | Clues used: " << p1.getNumClues(); 
+	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues(); 
 	if (!p1.isNormalMode())
 		file << " | EASY MODE";
+	file << endl;
 	file.close();
 }
 
