@@ -114,9 +114,9 @@ char displayInstructions() {
 	cout << " If you input an invalid word you will be required to write something else, until your input is valid.\n If you type '-' the word starting from that position will be removed.\n Typing '?' will display every possible insertion." << endl;
 	cout << "-------------------------" << endl << endl;
 	cout << "OPTIONS:" << endl;
-	cout << "1 - Create puzzle" << endl;
-	cout << "2 - Resume puzzle" << endl;
-	cout << "0 - Exit" << endl << endl;
+	cout << " 1 - Create puzzle" << endl;
+	cout << " 2 - Resume puzzle" << endl;
+	cout << " 0 - Exit" << endl << endl;
 	cout << "Option ? ";
 	char option; cin >> option; clearBadInput();
 	return option;
