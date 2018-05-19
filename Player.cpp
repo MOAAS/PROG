@@ -21,6 +21,10 @@ size_t Player::getNumClues() const {
 	return numClues;
 }
 
+size_t Player::getTimeTaken() const {
+	return endTime - startTime;
+}
+
 bool Player::isNormalMode() const {
 	return normalMode;
 }
@@ -42,7 +46,6 @@ void Player::startClock() {
 }
 
 
-size_t Player::endClock() {
+void Player::endClock() {
 	endTime = time(NULL);
-	return endTime - startTime;
 }
