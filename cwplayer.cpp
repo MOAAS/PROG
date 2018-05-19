@@ -24,7 +24,6 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 cluemap loadRandomClues(Board solutionBoard, Dictionary dict);
 
 void delete_at(string coords, Board &b1);
-bool replaceable(string coords, string oldword, string newword, Board emptyBoard);
 
 string getInput_PlayerName();
 string getInput_Coords(Board solutionBoard);
@@ -237,24 +236,8 @@ void delete_at(string coords, Board &b1) {
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
-/* 
-Verifica se é possivel colocar uma palavra em cima de outra num dado Board. retorna true se sim, false se não.
 
-string coords - coordenadas
-string oldword - palavra a mudar
-string newword - palavra nova
-Board emptyBoard - tabuleiro a ser resolvido
-*/
-bool replaceable(string coords, string oldword, string newword, Board emptyBoard)
-{
-	emptyBoard.Delete(coords);
-	if (!emptyBoard.Verify(coords, newword))
-	{
-		emptyBoard.Insert(oldword, coords);
-		return false;
-	}
-	return true;
-}
+
 
 // Funçoes que recebem input: Loops até o input ser válido.
 
@@ -315,7 +298,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 			if (realWord.size() != input_word.size()) //verifica se tem o tamanho certo
 				cout << "The word " << input_word << " does not have the right size." << endl;
 			else if (currentWord != "") // verifica se tem palavra lá
-				if (replaceable(coords, currentWord, input_word, emptyBoard)) //verifica se pode substituir
+				if (emptyBoard.replaceable(coords, currentWord, input_word)) //verifica se pode substituir
 					validWord = true;					
 				else cout << "Invalid replacement." << endl;
 			else if (!emptyBoard.Verify(coords, input_word)) //ve se coincide com letras anteriores
