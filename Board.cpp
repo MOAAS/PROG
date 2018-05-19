@@ -276,10 +276,8 @@ string Board::getWildcard(string coords, size_t size) { //  Recebe coordenadas (
 		cursor++;
 	}
 	if (cursor.MainCoord() < CoordLimit(cursor) && isalpha(ShowChar())) // Se o cursor conseguir avançar uma casa
-		return ""; // E se o carater a seguir ao ultimo for uma letra.
-	if (getWord(coords) == wildcard)
-		return "";
-	else return wildcard;
+		return "";                                                      // E se o carater a seguir ao ultimo for uma letra.
+	return wildcard;
 }
 
 bool Board::validCoords(string &coords) {
