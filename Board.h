@@ -24,6 +24,7 @@ public:
 	void display() const;
 	bool Verify(string coords, string palavra);//Ve se pode por a palavra
 	void Insert(string word, string coords);
+	bool replaceable(string coords, string oldword, string newword);
 	bool Delete(string coords);
 	void RefreshBoard();
 	void ChangeChar(char letra); //altera no board a letra com base na posicao do cursor
