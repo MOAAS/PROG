@@ -145,9 +145,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
-			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
-				cout << " - " << emptyBoard.getWord(coords) << endl;
-			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
+			cout << " - " << wildCard << endl;
 			numWordsHoriz++;
 		}
 	}	
@@ -171,9 +169,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
-			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
-				cout << " - " << emptyBoard.getWord(coords) << endl;
-			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
+			cout << " - " << wildCard << endl;
 			numWordsVertical++;
 		}
 	}
