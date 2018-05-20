@@ -10,17 +10,17 @@ public:
 	string getName() const;
 	size_t getNumClues() const;
 	size_t getTimeTaken() const; // retorna o tempo gasto
-	bool isNormalMode() const; 
+	bool isNormalMode() const;
 	void setName(string name);
 	void setEasyMode();
 	void incClues(); // soma 1 ao número de clues
 	void startClock();
-	void endClock(); 
+	void endClock();
 private:
 	bool normalMode; // false = easy mode.
 	string name;
-	size_t startTime;
-	size_t endTime;
+	time_t startTime;
+	time_t endTime;
 	size_t numClues;
 };
 

@@ -15,7 +15,7 @@ Dictionary::Dictionary(string textFile) {
 	load(textFile);
 }
 
-
+// Percorre o map inteiro. Devolve true se a palavra existir (no lado esquerdo do map)
 bool Dictionary::wordExists(string word) const{
 	stringUpper(word);
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
@@ -25,7 +25,16 @@ bool Dictionary::wordExists(string word) const{
 	return false;
 }
 
-// Transfere as palavras e os sinonimos do ficheiro de texto para o dicionario
+/* 
+Transfere as palavras e os sinonimos do ficheiro de texto para o map. Para cada linha do ficheiro, pega na primeira palavra e guarda-a. Todas as palavras seguintes contam como sinónimos. Guarda no map os sinónimos para essa palavra. 
+
+string line - linha do ficheiro de texto (variavel temporaria)
+string keyWord - palavra (lado esquerdo do map)
+string synonym - um dos sinónimos de keyWord
+ifstream file - ficheiro do dicionario
+istringstream iss - contem cada linha do ficheiro de texto, auxilia a inserção de palavras.
+
+*/
 void Dictionary::load(string filePath) {
 	string line, keyWord, synonym; // Variaveis auxiliares.
 	ifstream file(filePath);
@@ -36,7 +45,7 @@ void Dictionary::load(string filePath) {
 				continue;
 			istringstream iss(line); // Coloca line em iss.
 			iss >> keyWord; stringUpper(keyWord);	// Inicializa keyWord, apaga todos os carateres a mais. Coloca todos os carateres em maiusculas.
-			while (iss >> synonym) { // Faz o mesmo com todos os sinonimos.
+			while (iss >> synonym) { // Faz o mesmo com todos os sinonimos ^
 				stringUpper(synonym);
 				words[keyWord].push_back(synonym); // Coloca no vetor associado a keyWord.
 			}
@@ -50,18 +59,11 @@ void Dictionary::load(string filePath) {
 
 }
 
-// Mostra as palavras do dicionario e os seus sinonimos. debug
-void Dictionary::display() const {
-	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
-		cout << ite->first << ": ";
-		for (int i = 0; i < (ite->second).size(); i++)
-			cout << (ite->second)[i] << ", ";
-		cout << endl;
-	}
-}
 
-// Recebe uma string com wildcards (wildcardWord). Devolve um vetor com todas as strings que podem ser formadas.
-
+/* 
+Recebe uma string com wildcards (wildcardWord). Devolve um vetor com todas as strings que podem ser formadas, percorrendo todo o map de palavras e utilizando a função auxiliar wildcard match para cada palavra.
+string key - palavra (lado esquerdo do map)
+*/
 vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	vector<string> matches;
 	for (auto it : words) {
@@ -72,7 +74,8 @@ vector<string> Dictionary::getWildcardMatches(string wildcardWord) const {
 	}
 	return matches;
 }
-// Se a palavra não existir, devolve uma string vazia.
+
+// Encontra os sinónimos para a palavra fornecida, percorrendo o map todo. Escolhe um índice aleatório e devolve o sinónimo.
 string Dictionary::getRandomSynonym(string word) const {
 	for (map<string, vector<string>>::const_iterator ite = words.begin(); ite != words.end(); ite++) {
 		if (ite->first == word && (ite->second).size() != 0) { // A segunda condição apenas está lá por razões de segurança, pois deverá sempre haver sinónimos.
@@ -81,28 +84,29 @@ string Dictionary::getRandomSynonym(string word) const {
 			return synonyms[rand_index];
 		}
 	}
-	return "";
-}
+	return ""; // Se a palavra não existir, devolve uma string vazia.
 
+}
 
 size_t Dictionary::numSynonyms(string word)
 {
 	return words[word].size();
 }
 
-bool lineValid(string &line) { // Remove ':' e ';' de line. Retorna falso se a linha não for válida.
+
+bool lineValid(string &line) { 
 	for (int i = 0; i < line.size(); i++) {
-		if (line[i] == ':' || line[i] == ',') {
+		if (line[i] == ':' || line[i] == ',') { // Ao encontrar um desses dois, apaga-se.
 			line.erase(i, 1);
 		}
-		if (!isalpha(line[i]) && line[i] != ' ')
+		if (!isalpha(line[i]) && line[i] != ' ') // Se o carater nao for alfabético nem um espaço, retorna-se falso.
 			return false;
 	}
 	return true;
 }
 
-// Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 
+// Programa fornecido pelo professor. Verifica se uma string com wildcards pode corresponder a outra.
 bool wildcardMatch(const char *str, const char *strWild) {
 	while (*strWild) {
 		if (*strWild == '?') {
@@ -123,10 +127,9 @@ bool wildcardMatch(const char *str, const char *strWild) {
 				return false;
 		}
 	}
-	// Have a match? Only if both are at the end...
 	return !*str && !*strWild;
 }
 
-void stringUpper(string &input) { // Converte uma string para upper case. Passada por referencia.
+void stringUpper(string &input) {
 	transform(input.begin(), input.end(), input.begin(), ::toupper);
 }

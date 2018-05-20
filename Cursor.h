@@ -6,15 +6,15 @@ using namespace std;
 class Cursor {
 public:
 	friend class Board;
-	Cursor();
-	Cursor(int x, int y, char dir);
-	void moveTo(int x, int y);
-	void moveTo(int x, int y, char dir);
-	void moveTo(string coords);
-	void changeDir(char dir);
-	Cursor operator++(int unused);
-	Cursor operator--(int unused);
-	int MainCoord(); //da a coordenada principal na direcao atual
+	Cursor(); // Default: (0, 0) Dir: H
+	Cursor(int x, int y, char dir); // (x, y) Dir: dir
+	void moveTo(int x, int y); // Altera (x, y)
+	void moveTo(int x, int y, char dir); // Altera direção também.
+	void moveTo(string coords); // Consegue receber coordenadas da forma "LcD"
+	void changeDir(char dir); // Altera só direção.
+	Cursor operator++(int unused); // Avança uma posição, dependendo da coordenada (Cursor++)
+	Cursor operator--(int unused); // Diminui uma posição, dependendo da coordenada (Cursor--)
+	int MainCoord(); // Devolve a coordenada na direção atual (x, caso dir = 'H'. y, caso dir = 'V')
 private:
 	int x, y;
 	char dir; // Direção. H / V
