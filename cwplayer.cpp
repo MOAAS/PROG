@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "dictionary.h"
 #include "consolecolors.h"
 #include "board.h"
@@ -17,22 +18,28 @@ using namespace std;
 typedef map<string, vector<string>> cluemap; // ["AaH", "help"]
 typedef bool flag;
 
+// Funçoes para as clues
 int getDisplayColor(string coords, Board solutionBoard, Board emptyBoard);
 void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool showCorrectGuesses);
 bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionary dict);
 cluemap loadRandomClues(Board solutionBoard, Dictionary dict);
 
+// Apagar palavras
 void delete_at(string coords, Board &b1);
 
+// Recebe input para nome coordenadas e palavra
 string getInput_PlayerName();
 string getInput_Coords(Board solutionBoard);
 string getInput_Word(Board emptyBoard, Board solutionBoard, string coords);
 
+// Outras funções
 string openBoard(Board &solutionBoard, Board &emptyBoard);
 void addValidExtraWords(Board &b1, Board solutionBoard);
+
 inline void clearBadInput();
 void saveStats(Board solutionB1, Player p1);
 
+// UI / Opções
 void displayInstructions();
 void restartPlayer();
 bool getInput_showCorrectGuesses();
@@ -40,6 +47,7 @@ bool getInput_Difficulty();
 
 /*
 Carrega um Board, copia-o para outro e esvazia as palavras. Carrega o dicionário. Cria um jogador. Carrega um sinónimo para cada palavra. Enquanto o tabuleiro não estiver resolvido, pede ao utilizador coordenadas e uma palavra (ou se quer uma pista ou se quer remover), coloca-a no sítio. Quando o tabuleiro estiver cheio verifica se está correto. Se sim, guarda o tempo gasto e grava a informação do jogador num ficheiro.
+
 Board solutionB1 - board com a solução.
 Board b1 - board a ser resolvido
 cluemap clues - map<string, vector<string>> com as coordenadas das respostas e alguns sinónimos (clues)
@@ -119,6 +127,7 @@ int getDisplayColor(string coords, Board solutionBoard, Board emptyBoard) {
 
 /*
 Mostra as coordenadas e as pistas que há, primeiro as Horizontais e depois as Verticais. Se showCorrectGuesses == true, mostra as respostas certas a verde e as erradas a vermelho. Se não, mostra as preenchidas a amarelo. As não preenchidas ficam sempre a branco. Mostra tambem o tamanho das respostas e as letras que já estão no tabuleiro (restrições).
+
 int numWordsHoriz = 0, numWordsVertical = 0 - São apenas contadores das palavras horizontais e verticais.
 size_t wordSize - tamanho da palavra correta
 string wildCard - para essas coordenadas: pontos de interrogação/letras dependendo se a casa está vazia ou não. (ex: "I??A?")
@@ -177,6 +186,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 
 /*
 Obtem a palavra correta, obtem as pistas já fornecidas e o número de sinónimos que há para a palavra correta. Verifica que ainda há sinónimos suficientes, vai obtendo um sinónimo à sorte até que se obtenha um que não se tenha ainda fornecido.
+
 string answer - resposta correta
 vector<string> givenClues - pistas já fornecidas
 size_t nClues - número de pistas já fornecidas para a palavra
@@ -203,6 +213,7 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 
 /*
 Vai buscar o mapa de coordenadas das solução. Por cada palavra lá obtém-se um sinónimo.
+
 cluemap clues - mapa de pistas a devolver (map<string, vector<string>>)
 string coords - coordenadas
 string word - palavra
@@ -225,9 +236,6 @@ void delete_at(string coords, Board &b1) {
 	if (b1.Delete(coords)) // Tenta apagar
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
-
-
-// Funçoes que recebem input: Loops até o input ser válido.
 
 // Recebe nome do jogador
 string getInput_PlayerName() {
@@ -261,6 +269,7 @@ string getInput_Coords(Board solutionBoard) {
 
 /*
 Recebe uma palavra para colocar nas coordenadas (coords), ou indicação para remover  uma palavra, ou acrescentar uma pista. Verifica se a palavra tem o tamanho certo, se pode subtituir caso esteja lá uma já, se cabe no tabuleiro, ou se existem palavras para apagar (no caso de se responder "-").
+
 flag validWord - indica se input válido
 string realWord - soluçao para essas coords
 string currentWord - palavra que está no tabuleiro que o utilizador preenche
@@ -299,9 +308,9 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	return input_word;
 }
 
-
 /*
 Pede o nome de um ficheiro de tabuleiro. Carrega solutionBoard, copia-o para emptyBoard (board a ser resolvivo). Emptyboard perde todas as palavras, ficando apenas com as células pretas. Retorna o nome do ficheiro dicionario.
+
 string boardFile_path, dictFile_path - nome dos ficheiros
 ifstream file - ficheiro Board
 */
@@ -321,7 +330,8 @@ string openBoard(Board &solutionBoard, Board &emptyBoard) {
 }
 
 /*
-Recebe um tabuleiro que está a ser preenchido pelo utilizador e a solução. Vê se alguma palavra que foi introduzida acidentalmente pelo utilizador realmente corresponde a uma entrada no tabuleiro solução, ou seja, se começa nalguma casa válida e se tem o tamanho correto. Adiciona todas essas palavras novas válidas. (Mesmo que já estejam no tabuleiro visual, o programa ainda não conta estas palavras)
+Recebe um tabuleiro que está a ser preenchido pelo utilizador e a solução. Vê se alguma palavra que foi introduzida acidentalmente pelo utilizador realmente corresponde a uma entrada no tabuleiro solução, ou seja, se começa nalguma casa válida e se tem o tamanho correto. Adiciona todas essas palavras novas válidas. (Mesmo que já estejam no tabuleiro visual, o programa ainda não contava estas palavras)
+
 map<string, string> newWords - todas as palavras que estão no tabuleiro mas não estão no map de palavras
 */
 void addValidExtraWords(Board &b1, Board solutionBoard) {
@@ -346,6 +356,7 @@ inline void clearBadInput() {
 
 /*
 Recebe a solução, o dicionário, o jogador e o tempo gasto. Guarda num ficheiro "bxxx_p.txt" o tabuleiro (se o ficheiro não existir) e acrescenta no fim uma linha mostrando o Nome do jogador, o Tempo que ele demorou a resolver e o número de pistas usadas. Se estiver a jogar em modo fácil acrescenta também essa informação.
+
 size_t boardNum - número do tabuleiro
 ostringstream oss - guarda "bxxx_p.txt"
 string file_path = oss.str() - guarda o ficheiro onde se irá guardar
@@ -363,7 +374,7 @@ void saveStats(Board solutionB1, Player p1) {
 	file.close();
 }
 
-// Mostra instruções (WIP)
+// Mostra instruções
 void displayInstructions() {
 	cout << "CROSSWORDS PUZZLE PLAYER" << endl;
 	cout << "=========================" << endl;
