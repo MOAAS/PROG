@@ -2,7 +2,7 @@
 #include "dictionary.h"
 #include "consolecolors.h"
 #include "board.h"
-#include "player.h"
+#include "Player.h"
 #include "Cursor.h"
 #include <string>
 #include <fstream>
@@ -88,9 +88,8 @@ int main() {
 			}
 			// BOARD CHEIO!
 			if (b1.isFull()) {
-				//addValidExtraWords(b1, solutionB1);
 				b1.display();
-				displayClues(clues, solutionB1, b1, solutionB1 == b1);
+				displayClues(clues, solutionB1, b1, solutionB1 == b1); // se solution == b1, showCorrectGuesses = true.
 				if (solutionB1 == b1) // == compara os boards!
 					boardSolved = true;
 				else if (easyMode)
@@ -233,8 +232,6 @@ void delete_at(string coords, Board &b1) {
 }
 
 
-
-
 // Funçoes que recebem input: Loops até o input ser válido.
 
 // Recebe nome do jogador
@@ -365,7 +362,7 @@ string file_path = oss.str() - guarda o ficheiro onde se irá guardar
 void saveStats(Board solutionB1, Player p1) {
 	size_t boardNum = solutionB1.getBoardNumber(); // obtém o número do tabuleiro
 	ostringstream oss;
-	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_s.txt"; // oss = bxxx_s.txt
+	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_p.txt"; // oss = bxxx_p.txt
 	string file_path = oss.str();
 	ofstream file(file_path, ios::app); // abre o ficheiro no final, depois acrescenta a informação.
 	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues(); 
