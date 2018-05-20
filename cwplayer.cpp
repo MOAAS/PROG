@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "dictionary.h"
 #include "consolecolors.h"
 #include "board.h"
@@ -41,8 +40,7 @@ bool getInput_Difficulty();
 
 /*
 Carrega um Board, copia-o para outro e esvazia as palavras. Carrega o dicionário. Cria um jogador. Carrega um sinónimo para cada palavra. Enquanto o tabuleiro não estiver resolvido, pede ao utilizador coordenadas e uma palavra (ou se quer uma pista ou se quer remover), coloca-a no sítio. Quando o tabuleiro estiver cheio verifica se está correto. Se sim, guarda o tempo gasto e grava a informação do jogador num ficheiro.
-
-Board solutionB1 - board com a solução. 
+Board solutionB1 - board com a solução.
 Board b1 - board a ser resolvido
 cluemap clues - map<string, vector<string>> com as coordenadas das respostas e alguns sinónimos (clues)
 flag boardSolved - indica se o tabuleiro já foi resolvido
@@ -120,8 +118,7 @@ int getDisplayColor(string coords, Board solutionBoard, Board emptyBoard) {
 }
 
 /*
-Mostra as coordenadas e as pistas que há, primeiro as Horizontais e depois as Verticais. Se showCorrectGuesses == true, mostra as respostas certas a verde e as erradas a vermelho. Se não, mostra as preenchidas a amarelo. As não preenchidas ficam sempre a branco. Mostra tambem o tamanho das respostas e as letras que já estão no tabuleiro (restrições). 
-
+Mostra as coordenadas e as pistas que há, primeiro as Horizontais e depois as Verticais. Se showCorrectGuesses == true, mostra as respostas certas a verde e as erradas a vermelho. Se não, mostra as preenchidas a amarelo. As não preenchidas ficam sempre a branco. Mostra tambem o tamanho das respostas e as letras que já estão no tabuleiro (restrições).
 int numWordsHoriz = 0, numWordsVertical = 0 - São apenas contadores das palavras horizontais e verticais.
 size_t wordSize - tamanho da palavra correta
 string wildCard - para essas coordenadas: pontos de interrogação/letras dependendo se a casa está vazia ou não. (ex: "I??A?")
@@ -133,13 +130,13 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 		string coords = iter.first; // coordenadas para esta iteração
 		vector<string> synonyms = iter.second; // sinónimos para estas coordenadas
 		if (showCorrectGuesses)
-			setcolor(getDisplayColor(coords, solutionBoard, emptyBoard)); 
+			setcolor(getDisplayColor(coords, solutionBoard, emptyBoard));
 		else if (emptyBoard.getWord(coords) != "") // Se já houver palavra nessas coordenadas!
 			setcolor(YELLOW);
 		else setcolor(WHITE);
 		if (coords[2] == 'H') {  // Se forem coordenadas com direçao vertical
-			cout << coords.substr(0,2) << ": ";
-			for (int i = 0; i < synonyms.size(); i++)
+			cout << coords.substr(0, 2) << ": ";
+			for (size_t i = 0; i < synonyms.size(); i++)
 				cout << synonyms[i] << " ";
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
@@ -147,7 +144,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			cout << " - " << wildCard << endl;
 			numWordsHoriz++;
 		}
-	}	
+	}
 	setcolor(WHITE);
 	if (numWordsHoriz == 0)
 		cout << "No horizontal words." << endl;
@@ -163,7 +160,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 		else setcolor(WHITE);
 		if (coords[2] == 'V') { // Se forem coordenadas com direçao vertical
 			cout << coords.substr(0, 2) << ": ";
-			for (int i = 0; i < synonyms.size(); i++)
+			for (size_t i = 0; i < synonyms.size(); i++)
 				cout << synonyms[i] << " ";
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
@@ -180,7 +177,6 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 
 /*
 Obtem a palavra correta, obtem as pistas já fornecidas e o número de sinónimos que há para a palavra correta. Verifica que ainda há sinónimos suficientes, vai obtendo um sinónimo à sorte até que se obtenha um que não se tenha ainda fornecido.
-
 string answer - resposta correta
 vector<string> givenClues - pistas já fornecidas
 size_t nClues - número de pistas já fornecidas para a palavra
@@ -207,7 +203,6 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 
 /*
 Vai buscar o mapa de coordenadas das solução. Por cada palavra lá obtém-se um sinónimo.
-
 cluemap clues - mapa de pistas a devolver (map<string, vector<string>>)
 string coords - coordenadas
 string word - palavra
@@ -219,7 +214,7 @@ cluemap loadRandomClues(Board solutionBoard, Dictionary dict) {
 	for (auto ite : coordsMap) {
 		string coords = ite.first;	string word = ite.second;
 		string synonym = dict.getRandomSynonym(word);
-		clues[coords].push_back(synonym); 
+		clues[coords].push_back(synonym);
 	}
 	return clues;
 }
@@ -256,7 +251,7 @@ string getInput_Coords(Board solutionBoard) {
 		cin >> input_coords; clearBadInput();
 		// se forem validas tambem converte o necessario para minusculas e maiusculas!
 		// se não houver nenhuma palavra que comece aí as coordenadas são inválidas.
-		if (!solutionBoard.validCoords(input_coords) || solutionBoard.getWord(input_coords) == "") 
+		if (!solutionBoard.validCoords(input_coords) || solutionBoard.getWord(input_coords) == "")
 			validCoords = false;
 		if (!validCoords)
 			cout << "Invalid Position." << endl;
@@ -266,7 +261,6 @@ string getInput_Coords(Board solutionBoard) {
 
 /*
 Recebe uma palavra para colocar nas coordenadas (coords), ou indicação para remover  uma palavra, ou acrescentar uma pista. Verifica se a palavra tem o tamanho certo, se pode subtituir caso esteja lá uma já, se cabe no tabuleiro, ou se existem palavras para apagar (no caso de se responder "-").
-
 flag validWord - indica se input válido
 string realWord - soluçao para essas coords
 string currentWord - palavra que está no tabuleiro que o utilizador preenche
@@ -277,7 +271,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	do { // Loop enquanto input inválido.
 		validWord = false; // palavra inválida até prova em contrário
 		cout << "Word ( - = remove / ? = clue / CTRL-Z = return ) ? ";
-		cin >> input_word; 
+		cin >> input_word;
 		if (cin.eof()) {
 			cin.clear();
 			return "";
@@ -292,7 +286,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 				cout << "The word " << input_word << " does not have the right size." << endl;
 			else if (currentWord != "") // verifica se tem palavra lá
 				if (emptyBoard.replaceable(coords, currentWord, input_word)) //verifica se pode substituir
-					validWord = true;					
+					validWord = true;
 				else cout << "Invalid replacement." << endl;
 			else if (!emptyBoard.Verify(coords, input_word)) //ve se coincide com letras anteriores
 				cout << "The word " << input_word << " does not fit." << endl;
@@ -308,7 +302,6 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 
 /*
 Pede o nome de um ficheiro de tabuleiro. Carrega solutionBoard, copia-o para emptyBoard (board a ser resolvivo). Emptyboard perde todas as palavras, ficando apenas com as células pretas. Retorna o nome do ficheiro dicionario.
-
 string boardFile_path, dictFile_path - nome dos ficheiros
 ifstream file - ficheiro Board
 */
@@ -321,7 +314,7 @@ string openBoard(Board &solutionBoard, Board &emptyBoard) {
 		file.open(boardFile_path);
 	} while (!file.good());
 	getline(file, dictFile_path); // tira a primeira linha -> nome do ficheiro do dicionario
-	solutionBoard.loadFile(boardFile_path); 
+	solutionBoard.loadFile(boardFile_path);
 	emptyBoard = solutionBoard;
 	emptyBoard.grid(); // Ficam apenas as células pretas (perde as palavras)
 	return dictFile_path;
@@ -329,13 +322,12 @@ string openBoard(Board &solutionBoard, Board &emptyBoard) {
 
 /*
 Recebe um tabuleiro que está a ser preenchido pelo utilizador e a solução. Vê se alguma palavra que foi introduzida acidentalmente pelo utilizador realmente corresponde a uma entrada no tabuleiro solução, ou seja, se começa nalguma casa válida e se tem o tamanho correto. Adiciona todas essas palavras novas válidas. (Mesmo que já estejam no tabuleiro visual, o programa ainda não conta estas palavras)
-
 map<string, string> newWords - todas as palavras que estão no tabuleiro mas não estão no map de palavras
 */
 void addValidExtraWords(Board &b1, Board solutionBoard) {
 	map<string, string> newWords = b1.extraWords();
 	for (auto it = newWords.cbegin(); it != newWords.cend(); it++) { // percorre o mapa de palavras novas
-		string coords = it->first; 
+		string coords = it->first;
 		string word = it->second;
 		if (solutionBoard.getWord(coords).size() == word.size()) // se a palavra que está no tabuleiro com essas coordenadas tem tamanho igual à palavra nova, é válida.
 			b1.Insert(word, coords); // insere no tabuleiro 
@@ -354,7 +346,6 @@ inline void clearBadInput() {
 
 /*
 Recebe a solução, o dicionário, o jogador e o tempo gasto. Guarda num ficheiro "bxxx_p.txt" o tabuleiro (se o ficheiro não existir) e acrescenta no fim uma linha mostrando o Nome do jogador, o Tempo que ele demorou a resolver e o número de pistas usadas. Se estiver a jogar em modo fácil acrescenta também essa informação.
-
 size_t boardNum - número do tabuleiro
 ostringstream oss - guarda "bxxx_p.txt"
 string file_path = oss.str() - guarda o ficheiro onde se irá guardar
@@ -365,7 +356,7 @@ void saveStats(Board solutionB1, Player p1) {
 	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_p.txt"; // oss = bxxx_p.txt
 	string file_path = oss.str();
 	ofstream file(file_path, ios::app); // abre o ficheiro no final, depois acrescenta a informação.
-	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues(); 
+	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues();
 	if (!p1.isNormalMode())
 		file << " | EASY MODE";
 	file << endl;
@@ -428,7 +419,7 @@ bool getInput_Difficulty() {
 		cout << "Option: ";
 		cin >> decision; clearBadInput();
 		stringUpper(decision); // Para maiúscula
-	    cout << endl;
+		cout << endl;
 	} while (decision != "EASY" && decision != "NORMAL");
 	return decision == "EASY";
 }
