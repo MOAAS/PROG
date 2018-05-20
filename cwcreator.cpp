@@ -314,7 +314,7 @@ bool finalCheck(Board &b1, Dictionary d1)
 		if (validWords.size() == 1) cout << "This word was automatically inserted:\n";
 		else cout << "These words were automatically inserted:\n";
 		for (auto it = validWords.cbegin(); it != validWords.cend(); it++)
-			cout << it->second << " " << it->first << "\n";
+			cout << " " << it->second << " " << it->first << "\n";
 	}
 	cout << endl;
 	for (auto it = newWords.cbegin(); it != newWords.cend(); it++)
