@@ -2,7 +2,7 @@
 #include "dictionary.h"
 #include "consolecolors.h"
 #include "board.h"
-#include "player.h"
+#include "Player.h"
 #include "Cursor.h"
 #include <string>
 #include <fstream>
@@ -24,7 +24,6 @@ bool addRandomClue(string coords, Board solutionBoard, cluemap &clues, Dictionar
 cluemap loadRandomClues(Board solutionBoard, Dictionary dict);
 
 void delete_at(string coords, Board &b1);
-bool replaceable(string coords, string oldword, string newword, Board emptyBoard);
 
 string getInput_PlayerName();
 string getInput_Coords(Board solutionBoard);
@@ -89,9 +88,8 @@ int main() {
 			}
 			// BOARD CHEIO!
 			if (b1.isFull()) {
-				//addValidExtraWords(b1, solutionB1);
 				b1.display();
-				displayClues(clues, solutionB1, b1, solutionB1 == b1);
+				displayClues(clues, solutionB1, b1, solutionB1 == b1); // se solution == b1, showCorrectGuesses = true.
 				if (solutionB1 == b1) // == compara os boards!
 					boardSolved = true;
 				else if (easyMode)
@@ -146,9 +144,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
-			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
-				cout << " - " << emptyBoard.getWord(coords) << endl;
-			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
+			cout << " - " << wildCard << endl;
 			numWordsHoriz++;
 		}
 	}	
@@ -172,9 +168,7 @@ void displayClues(cluemap clues, Board solutionBoard, Board emptyBoard, bool sho
 			size_t wordSize = solutionBoard.getWord(coords).size();
 			string wildCard = emptyBoard.getWildcard(coords, wordSize);
 			cout << "(" << wordSize << ")";
-			if (wildCard.size() == 0) // porque a funçao getWildcard retorna uma string vazia se já estiver lá uma palavra inteira.
-				cout << " - " << emptyBoard.getWord(coords) << endl;
-			else cout << " - " << emptyBoard.getWildcard(coords, wordSize) << endl;
+			cout << " - " << wildCard << endl;
 			numWordsVertical++;
 		}
 	}
@@ -237,24 +231,6 @@ void delete_at(string coords, Board &b1) {
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
-/* 
-Verifica se é possivel colocar uma palavra em cima de outra num dado Board. retorna true se sim, false se não.
-
-string coords - coordenadas
-string oldword - palavra a mudar
-string newword - palavra nova
-Board emptyBoard - tabuleiro a ser resolvido
-*/
-bool replaceable(string coords, string oldword, string newword, Board emptyBoard)
-{
-	emptyBoard.Delete(coords);
-	if (!emptyBoard.Verify(coords, newword))
-	{
-		emptyBoard.Insert(oldword, coords);
-		return false;
-	}
-	return true;
-}
 
 // Funçoes que recebem input: Loops até o input ser válido.
 
@@ -300,7 +276,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	flag validWord;
 	do { // Loop enquanto input inválido.
 		validWord = false; // palavra inválida até prova em contrário
-		cout << "Word ( - = remove / ? = clue / Ctrl-Z = return ) ? ";
+		cout << "Word ( - = remove / ? = clue / CTRL-Z = return ) ? ";
 		cin >> input_word; 
 		if (cin.eof()) {
 			cin.clear();
@@ -315,7 +291,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 			if (realWord.size() != input_word.size()) //verifica se tem o tamanho certo
 				cout << "The word " << input_word << " does not have the right size." << endl;
 			else if (currentWord != "") // verifica se tem palavra lá
-				if (replaceable(coords, currentWord, input_word, emptyBoard)) //verifica se pode substituir
+				if (emptyBoard.replaceable(coords, currentWord, input_word)) //verifica se pode substituir
 					validWord = true;					
 				else cout << "Invalid replacement." << endl;
 			else if (!emptyBoard.Verify(coords, input_word)) //ve se coincide com letras anteriores
@@ -386,7 +362,7 @@ string file_path = oss.str() - guarda o ficheiro onde se irá guardar
 void saveStats(Board solutionB1, Player p1) {
 	size_t boardNum = solutionB1.getBoardNumber(); // obtém o número do tabuleiro
 	ostringstream oss;
-	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_s.txt"; // oss = bxxx_s.txt
+	oss << "b" << setfill('0') << setw(3) << boardNum; oss << "_p.txt"; // oss = bxxx_p.txt
 	string file_path = oss.str();
 	ofstream file(file_path, ios::app); // abre o ficheiro no final, depois acrescenta a informação.
 	file << "Name: " << p1.getName() << " | Time taken: " << p1.getTimeTaken() << " seconds | Clues used: " << p1.getNumClues(); 
@@ -400,6 +376,19 @@ void saveStats(Board solutionB1, Player p1) {
 void displayInstructions() {
 	cout << "CROSSWORDS PUZZLE PLAYER" << endl;
 	cout << "=========================" << endl;
+	cout << "INSTRUCTIONS:" << endl;
+	cout << "You will be asked to input a position and its respective word until the board is solved." << endl << endl;
+	cout << "Position (LCD)" << endl;
+	cout << " - LCD stands for Line Column and Direction." << endl;
+	cout << " - Line and Column will be a letter each, and Direction will either be 'H' (for Horizontal) or 'V' (for vertical). Input is case-insensitive." << endl;
+	cout << " - You will only be able to insert positions which correspond to the beggining of a solution" << endl << endl;
+	cout << "Word ( - = remove / ? = clue / CTRL-Z = return )" << endl;
+	cout << " - You will be required to input any word that fits in the board, but it needs to respect the letters from the previously placed words." << endl;
+	cout << " - If you type '-' the word starting from that position will be removed." << endl;
+	cout << " - Typing '?' will add an extra synonym to the clues for that word." << endl;
+	cout << " - CTRL-Z will return to the position selection." << endl;
+	cout << " - You are allowed to replace the word on the position you picked." << endl;
+	cout << "-------------------------" << endl << endl;
 }
 
 // Pergunta ao utilizador se deseja recomeçar. Se sim, limpa a consola. Se não, fecha o programa.

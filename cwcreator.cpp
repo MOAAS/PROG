@@ -16,24 +16,27 @@ using namespace std;
 
 typedef bool flag;
 
-char displayInstructions();
-void restartCreator();
 
+// Criar Puzzle
 pair<Board, Dictionary> createPuzzle();
 pair<Board, Dictionary> resumePuzzle();
 
+// Recebe e testa input de coordenadas e palavras
 string getInput_Coords(Board b1, Dictionary d1);
 string getInput_Word(Board b1, Dictionary d1, string coords);
 
+// Criação de tabuleiro
 bool boardBuilding(Board &b1, Dictionary d1);
-
 void delete_at(string coords, Board &b1);
-void displaySuggestions(Board b1, Dictionary d1, string coords);
 void insert_at(string coords, string word, Board &b1);
+void displaySuggestions(Board b1, Dictionary d1, string coords);
 bool finalCheck(Board &b1, Dictionary d1);
 
+// Funções auxiliares
 void ShowVector(vector<string> v);
 inline void clearBadInput();
+char displayInstructions();
+void restartCreator();
 
 /*
 Pergunta ao utilizador o que deseja fazer, e chama as funções de construir o tabuleiro. Quando o tabuleiro for válido, pergunta ao utilizador se deseja recomeçar ou sair.
@@ -100,28 +103,6 @@ bool boardBuilding(Board &b1, Dictionary d1) {
 }
 
 /*
-Mostra as instruções e pergunta ao utilizador o que quer fazer: começar, continuar um puzzle, ou sair.
-char option - Opção do utilizador (0, 1, 2)
-*/
-char displayInstructions() {
-	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
-	cout << "=========================" << endl;
-	cout << "INSTRUCTIONS:" << endl;
-	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl;
-	cout << "Position (LCD / Ctrl-Z = stop)" << endl;
-	cout << " LCD stands for Line Column and Direction.\n Line and Column will be a letter (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical).\n Using Ctrl+Z will finish the board creation." << endl;
-	cout << "Word ( - = remove / ? = help)" << endl;
-	cout << " If you input an invalid word you will be required to write something else, until your input is valid.\n If you type '-' the word starting from that position will be removed.\n Typing '?' will display every possible insertion." << endl;
-	cout << "-------------------------" << endl << endl;
-	cout << "OPTIONS:" << endl;
-	cout << " 1 - Create puzzle" << endl;
-	cout << " 2 - Resume puzzle" << endl;
-	cout << " 0 - Exit" << endl << endl;
-	cout << "Option ? ";
-	char option; cin >> option; clearBadInput();
-	return option;
-}
-/*
 Pede o nome do ficheiro do dicionario, abre-o. Pede o tamanho do tabuleiro, cria-o. Devolve os dois.
 string dictFile_path - ficheiro de dicionario
 int boardSizeX, boardSizeY - colunas e linhas do tabuleiro. Fornecido pelo utilizador.
@@ -139,7 +120,7 @@ pair<Board, Dictionary> createPuzzle() {
 	file.close();
 	Dictionary d1(dictFile_path);
 	do { // Loop enquanto o input for inválido.
-		cout << "Board size (lines columns) ? ";
+		cout << "Board size, Max: " << Board::MAX_SIZE << " (Lines Columns) ? ";
 		cin >> boardSizeY >> boardSizeX; clearBadInput(); // SizeY = numero de linhas. SizeX = numero de colunas !
 	} while (boardSizeX <= 0 || boardSizeY <= 0 || boardSizeX > Board::MAX_SIZE || boardSizeY > Board::MAX_SIZE);
 	cout << endl;
@@ -213,6 +194,7 @@ bool exists - auxiliar. indica se o input existe no dicionario.
 string getInput_Word(Board b1, Dictionary d1, string coords) {
 	string input_word;
 	flag validWord;
+	string currentWord = b1.getWord(coords);
 	do { // Loop enquanto input inválido.
 		validWord = true;
 		cout << "Word ( - = remove / ? = help ) ? ";
@@ -230,6 +212,14 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 			cout << "The word " << input_word << " is already in the board!" << endl;
 			validWord = false;
 		}
+		else if (exists && currentWord != "") //Posicao do board ja ocupada
+		{
+			if (!b1.replaceable(coords, currentWord, input_word))  //nao pode ser substituida
+			{
+				cout << "Invalid Replacement." << endl;
+				validWord = false;
+			}
+		}
 		else if (exists && !b1.Verify(coords, input_word)) { // Palavra existe, mas não pode ser colocada.
 			cout << "The word " << input_word << " does not fit in the board!" << endl;
 			validWord = false;
@@ -242,22 +232,6 @@ string getInput_Word(Board b1, Dictionary d1, string coords) {
 	return input_word;
 }
 
-/*
-Pergunta ao utilizador se quer recomeçar o programa. Se a resposta for "N", fecha o programa. Se for "Y", não faz nada.
-char decision - input.
-*/
-void restartCreator() {
-	char decision;
-	cout << endl;
-	do { // Loop enquanto input não for "Y" nem "N".
-		cout << "Do you want to restart? (Y/N) ";
-		cin >> decision; clearBadInput();
-		decision = toupper(decision); // Para maiúscula
-	} while (decision != 'Y' && decision != 'N');
-	if (decision == 'N')
-		exit(EXIT_SUCCESS);
-	else clrscr();
-}
 
 /*
 Tenta apagar a palavra que começa em coords (formato LcD).
@@ -269,59 +243,53 @@ void delete_at(string coords, Board &b1) {
 		cout << "Successfully deleted the word " << deleted_word << ".\n";
 }
 
-/*
-Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wilcard é usada a função getwildcardmatches do trabalho 1.
-vector<string> sugestoes - vetor a retornar. conterá todas as sugestoes
-Cursor c1 - cursor auxiliar.
-string wildcard - Exemplo, "P???R".
-vector<string> wildcards - todas as possibilidades para wilcard
-*/
-void displaySuggestions(Board b1, Dictionary d1, string coords) {
-	vector<string> sugestoes;
-	Cursor c1; c1.moveTo(coords); // move o cursor até as coordenadas.
-	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
-	cout << "Fecthing suggested words..." << endl;
-	for (int i = c1.MainCoord(); i < b1.CoordLimit(c1); i++) { // c1.MainCoord() = coordenada na direção em que está. CoordLimit(c1) = coordenada máxima do board na direção de c1.
-		string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
-		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
-		for (int i = 0; i < wildcards.size(); i++) { // Insere essas palavras no vetor, se não estiverem no board!
-			if (!b1.hasWord(wildcards[i]))
-				sugestoes.push_back(wildcards[i]);
-		} 
-		wordSize++;
-	}
-	if (sugestoes.empty())
-		cout << "No words found in the dictionary." << endl;
-	else {
-		cout << "Suggested Words: ";
-		ShowVector(sugestoes);
-	}
-}
-
-
 void insert_at(string coords, string word, Board &b1) { // Insere...
 	b1.Insert(word, coords);
 	cout << "The word " << word << " has been inserted." << endl;
 }
 
-void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
-{
-	for (int i = 0; i < v.size(); i++)
-		cout << v[i] << " ";
-	cout << endl;
-}
+/*
+Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wildcard é usada a função getwildcardmatches do trabalho 1.
+A exceção é já haver uma palavra nas coordenadas fornecidas. Nesse caso apenas faz-se a wildcard como se ela nao estivesse lá (apaga-se a palavra antes para garantir que as únicas restrições são as letras das outras palavras.
 
-inline void clearBadInput() {
-	if (cin.eof())
-		cin.clear();
+vector<string> sugestoes - vetor a retornar. conterá todas as sugestoes
+Cursor c1 - cursor auxiliar.
+string wildcard - Exemplo, "P???R".
+vector<string> wildcards - todas as possibilidades para wilcard
+string currentWord - palavra que está nas coordenadas
+*/
+void displaySuggestions(Board b1, Dictionary d1, string coords) {
+	cout << "Fetching suggested words..." << endl;
+	vector<string> sugestoes;
+	Cursor c1; c1.moveTo(coords); // move o cursor até as coordenadas.
+	string currentWord = b1.getWord(coords);
+	if (currentWord != "")
+		b1.Delete(coords);
+	int wordSize = 1; // wordSize vai de 1 até ao limite do tabuleiro.
+	for (int i = c1.MainCoord(); i < b1.CoordLimit(c1); i++) { // c1.MainCoord() = coordenada na direção em que está. CoordLimit(c1) = coordenada máxima do board na direção de c1.
+		string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
+		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
+		for (int j = 0; j < wildcards.size(); j++) { // Insere essas palavras no vetor, se não estiverem no board!
+			if (!b1.hasWord(wildcards[j]) && wildcards[j] != currentWord) // Se o board não tiver já a palavra (segunda condição é para não sugerir a que já está lá)
+				sugestoes.push_back(wildcards[j]);
+		}
+		wordSize++;
+	}
+	if (currentWord != "")
+		b1.Insert(currentWord, coords);
+	if (sugestoes.empty())
+		cout << "No possible words found in the dictionary \"" << d1.filePath << "\"." << endl;
 	else {
-		cin.clear();
-		cin.ignore(10000, '\n');
+		cout << "Suggested words: ";
+		ShowVector(sugestoes);
 	}
 }
 
 /*
+Obtém todas as palavras que foram formadas acidentalmente (extraWords()). Separa as palavras válidas das inválidas em dois maps diferentes. As palavras válidas são as que existem no dicionário e não estão no tabuleiro. Se houver palavras inválidas, mostra-as no ecrã, retorna false. Se não, mostra as palavras válidas e insere-as no board, retorna true.
 
+map<string, string> newWords - palavras novas ("Coordenadas", "Palavra")
+map<string, string> validWords, invalidWords - palavras válidas e inválidas ("Coordenadas", "Palavra")
 */
 bool finalCheck(Board &b1, Dictionary d1)
 {
@@ -354,3 +322,63 @@ bool finalCheck(Board &b1, Dictionary d1)
 	return true;
 }
 
+void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
+{
+	for (int i = 0; i < v.size(); i++)
+		cout << v[i] << " ";
+	cout << endl;
+}
+
+inline void clearBadInput() {
+	if (cin.eof())
+		cin.clear();
+	else {
+		cin.clear();
+		cin.ignore(10000, '\n');
+	}
+}
+
+/*
+Mostra as instruções e pergunta ao utilizador o que quer fazer: começar, continuar um puzzle, ou sair.
+char option - Opção do utilizador (0, 1, 2)
+*/
+char displayInstructions() {
+	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
+	cout << "=========================" << endl;
+	cout << "INSTRUCTIONS:" << endl;
+	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl << endl;
+	cout << "Position (LCD / CTRL-Z = stop)" << endl;
+	cout << " - LCD stands for Line Column and Direction." << endl;
+	cout << " - Line and Column will be a letter each (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical). Input is case-insensitive." << endl;
+	cout << " - Using CTRL-Z will finish the board creation, then you'll need to choose whether you prefer to finish the board or save it for later." << endl << endl;
+	cout << "Word ( - = remove / ? = help)" << endl;
+	cout << " - You will be required to input any word that belongs to the dictionary and fits in the board, but it needs to respect the letters from the previously placed words." << endl;
+	cout << " - If you type '-' the word starting from that position will be removed." << endl;
+	cout << " - Typing '?' will display every possible insertion or replacement." << endl;
+	cout << " - You are allowed to replace the word on the position you picked." << endl;
+	cout << "-------------------------" << endl << endl;
+	cout << "OPTIONS:" << endl;
+	cout << " 1 - Create puzzle" << endl;
+	cout << " 2 - Resume puzzle" << endl;
+	cout << " 0 - Exit" << endl << endl;
+	cout << "Option ? ";
+	char option; cin >> option; clearBadInput();
+	return option;
+}
+
+/*
+Pergunta ao utilizador se quer recomeçar o programa. Se a resposta for "N", fecha o programa. Se for "Y", não faz nada.
+char decision - input.
+*/
+void restartCreator() {
+	char decision;
+	cout << endl;
+	do { // Loop enquanto input não for "Y" nem "N".
+		cout << "Do you want to restart? (Y/N) ";
+		cin >> decision; clearBadInput();
+		decision = toupper(decision); // Para maiúscula
+	} while (decision != 'Y' && decision != 'N');
+	if (decision == 'N')
+		exit(EXIT_SUCCESS);
+	else clrscr();
+}
