@@ -276,7 +276,7 @@ string getInput_Word(Board emptyBoard, Board solutionBoard, string coords) { //
 	flag validWord;
 	do { // Loop enquanto input inválido.
 		validWord = false; // palavra inválida até prova em contrário
-		cout << "Word ( - = remove / ? = clue / Ctrl-Z = return ) ? ";
+		cout << "Word ( - = remove / ? = clue / CTRL-Z = return ) ? ";
 		cin >> input_word; 
 		if (cin.eof()) {
 			cin.clear();
@@ -376,6 +376,19 @@ void saveStats(Board solutionB1, Player p1) {
 void displayInstructions() {
 	cout << "CROSSWORDS PUZZLE PLAYER" << endl;
 	cout << "=========================" << endl;
+	cout << "INSTRUCTIONS:" << endl;
+	cout << "You will be asked to input a position and its respective word until the board is solved." << endl << endl;
+	cout << "Position (LCD)" << endl;
+	cout << " - LCD stands for Line Column and Direction." << endl;
+	cout << " - Line and Column will be a letter each, and Direction will either be 'H' (for Horizontal) or 'V' (for vertical). Input is case-insensitive." << endl;
+	cout << " - You will only be able to insert positions which correspond to the beggining of a solution" << endl << endl;
+	cout << "Word ( - = remove / ? = clue / CTRL-Z = return )" << endl;
+	cout << " - You will be required to input any word that fits in the board, but it needs to respect the letters from the previously placed words." << endl;
+	cout << " - If you type '-' the word starting from that position will be removed." << endl;
+	cout << " - Typing '?' will add an extra synonym to the clues for that word." << endl;
+	cout << " - CTRL-Z will return to the position selection." << endl;
+	cout << " - You are allowed to replace the word on the position you picked." << endl;
+	cout << "-------------------------" << endl << endl;
 }
 
 // Pergunta ao utilizador se deseja recomeçar. Se sim, limpa a consola. Se não, fecha o programa.
