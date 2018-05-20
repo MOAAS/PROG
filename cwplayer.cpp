@@ -3,7 +3,6 @@
 #include "consolecolors.h"
 #include "board.h"
 #include "Player.h"
-#include "Cursor.h"
 #include <string>
 #include <fstream>
 #include <iostream>
