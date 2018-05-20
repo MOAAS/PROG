@@ -375,6 +375,7 @@ void saveStats(Board solutionB1, Player p1) {
 
 // Mostra instruções
 void displayInstructions() {
+	setcolor(WHITE);
 	cout << "CROSSWORDS PUZZLE PLAYER" << endl;
 	cout << "=========================" << endl;
 	cout << "INSTRUCTIONS:" << endl;
@@ -389,6 +390,18 @@ void displayInstructions() {
 	cout << " - Typing '?' will add an extra synonym to the clues for that word." << endl;
 	cout << " - CTRL-Z will return to the position selection." << endl;
 	cout << " - You are allowed to replace the word on the position you picked." << endl;
+	cout << "-------------------------" << endl;
+	cout << "CLUES: The synonyms will be shown in a specific way and colors:" << endl;
+	setcolor(WHITE);
+	cout << "  Word Synonym (SIZE) - EmptySpots   (EMPTY) " << endl;
+	setcolor(YELLOW);
+	cout << "  Word Synonym (SIZE) - EmptySpots   (FILLED)" << endl;
+	setcolor(LIGHTGREEN);
+	cout << "  Word Synonym (SIZE) - EmptySpots   (CORRECT)" << endl;
+	setcolor(LIGHTRED);
+	cout << "  Word Synonym (SIZE) - EmptySpots   (WRONG) " << endl;
+	setcolor(WHITE);
+	cout << "Note: Green/Red colors will only show up during specific occasions." << endl;
 	cout << "-------------------------" << endl << endl;
 }
 
@@ -424,8 +437,8 @@ bool getInput_Difficulty() {
 	cout << endl;
 	do { // Loop enquanto input não for "EASY" nem "NORMAL".
 		cout << "Choose difficulty: " << endl;
-		cout << " - Easy" << endl;
-		cout << " - Normal" << endl;
+		cout << " - Easy   (Always show correct guesses)" << endl;
+		cout << " - Normal (No changes)" << endl;
 		cout << "Option: ";
 		cin >> decision; clearBadInput();
 		stringUpper(decision); // Para maiúscula
