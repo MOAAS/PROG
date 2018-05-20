@@ -332,6 +332,17 @@ bool Board::hasWord(string word) const {
 	return false;
 }
 
+/* 
+Devolve um map com todas as palavras formadas acidentalmente por outras que foram colocadas da seguinte forma:
+ - Começa no canto superior esquerdo do tabuleiro e vai percorrendo-o coluna a coluna, extraindo as palavras que vão aparecendo. Se ao começar a leitura de uma palavra, o programa estiver numa posição já registada em placedWords_Coords (map da classe board), avança o número de casas equivalente ao tamanho dessa palavra.
+ - Faz agora o mesmo mas na horizontal, percorrendo linha a linha.
+
+ map<string, string> newWords - map a retornar
+ bool gettingWord - indica se o programa está a meio da leitura de uma palavra
+ string extraWord - palavra que o programa leu
+ string extraWordCoords - coordenadas da palavra que o programa leu
+ string CoordsLCD - coordenadas da posição atual na forma "LcD"
+*/
 map<string, string> Board::extraWords() {
 	map<string, string> newWords;
 	bool gettingWord = false;
@@ -445,5 +456,4 @@ bool Board::replaceable(string coords, string oldword, string newword)
 	}
 	Insert(oldword, coords);
 	return true;
-
 }
