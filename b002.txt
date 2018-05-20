@@ -1,0 +1,14 @@
+dicsyn.txt
+
+D . . . . E . 
+E . . . . R . 
+A . # . # R . 
+L . B . L # . 
+# . A . O . . 
+. . W . T . . 
+. . L . H . . 
+
+AaV DEAL
+AfV ERR
+DcV BAWL
+DeV LOTH
