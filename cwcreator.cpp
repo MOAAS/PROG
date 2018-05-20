@@ -17,21 +17,24 @@ using namespace std;
 typedef bool flag;
 
 
+// Criar Puzzle
 pair<Board, Dictionary> createPuzzle();
 pair<Board, Dictionary> resumePuzzle();
 
+// Recebe e testa input de coordenadas e palavras
 string getInput_Coords(Board b1, Dictionary d1);
 string getInput_Word(Board b1, Dictionary d1, string coords);
 
+// Criação de tabuleiro
 bool boardBuilding(Board &b1, Dictionary d1);
 void delete_at(string coords, Board &b1);
 void insert_at(string coords, string word, Board &b1);
 void displaySuggestions(Board b1, Dictionary d1, string coords);
 bool finalCheck(Board &b1, Dictionary d1);
 
+// Funções auxiliares
 void ShowVector(vector<string> v);
 inline void clearBadInput();
-
 char displayInstructions();
 void restartCreator();
 
@@ -246,7 +249,7 @@ void insert_at(string coords, string word, Board &b1) { // Insere...
 }
 
 /*
-Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wilcard é usada a função getwildcardmatches do trabalho 1.
+Mostra no ecrã todas as palavras que se podem fazer no board a partir de coords (LcD). Recebe um dicionário tambem. O que a função faz é começa na posição desejada e faz uma wildcard desde a posição até N casas à frente (por exemplo "P???R"). Faz isso para todos os tamanhos possíveis desde 1 até ao máximo que o tabuleiro aguenta nessa direção. Para cada wildcard é usada a função getwildcardmatches do trabalho 1.
 A exceção é já haver uma palavra nas coordenadas fornecidas. Nesse caso apenas faz-se a wildcard como se ela nao estivesse lá (apaga-se a palavra antes para garantir que as únicas restrições são as letras das outras palavras.
 
 vector<string> sugestoes - vetor a retornar. conterá todas as sugestoes
@@ -267,7 +270,7 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 		string wildcard = b1.getWildcard(coords, wordSize); // Recebe a wilcard a partir de coords, tamanho wordSize.
 		vector<string> wildcards = d1.getWildcardMatches(wildcard); // recebe as possiveis palavras associadas ao wordSize atual, com as coordenadas fornecidas.
 		for (int j = 0; j < wildcards.size(); j++) { // Insere essas palavras no vetor, se não estiverem no board!
-			if (!b1.hasWord(wildcards[j]))
+			if (!b1.hasWord(wildcards[j]) && wildcards[j] != currentWord) // Se o board não tiver já a palavra (segunda condição é para não sugerir a que já está lá)
 				sugestoes.push_back(wildcards[j]);
 		}
 		wordSize++;
@@ -275,9 +278,9 @@ void displaySuggestions(Board b1, Dictionary d1, string coords) {
 	if (currentWord != "")
 		b1.Insert(currentWord, coords);
 	if (sugestoes.empty())
-		cout << "No words found in the dictionary." << endl;
+		cout << "No possible words found in the dictionary \"" << d1.filePath << "\"." << endl;
 	else {
-		cout << "Suggested Words: ";
+		cout << "Suggested words: ";
 		ShowVector(sugestoes);
 	}
 }
@@ -319,8 +322,6 @@ bool finalCheck(Board &b1, Dictionary d1)
 	return true;
 }
 
-// Funçoes simples
-
 void ShowVector(vector<string> v) // Mostra os conteúdos de um vetor de strings
 {
 	for (int i = 0; i < v.size(); i++)
@@ -345,11 +346,16 @@ char displayInstructions() {
 	cout << "CROSSWORDS PUZZLE CREATOR" << endl;
 	cout << "=========================" << endl;
 	cout << "INSTRUCTIONS:" << endl;
-	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl;
-	cout << "Position (LCD / Ctrl-Z = stop)" << endl;
-	cout << " LCD stands for Line Column and Direction.\n Line and Column will be a letter (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical).\n Using Ctrl+Z will finish the board creation." << endl;
+	cout << "You will be asked to input a position and its respective word until you don't want to add any extra words to the board." << endl << endl;
+	cout << "Position (LCD / CTRL-Z = stop)" << endl;
+	cout << " - LCD stands for Line Column and Direction." << endl;
+	cout << " - Line and Column will be a letter each (limit depends on the size of the board) and Direction will either be 'H' (for Horizontal) or 'V' (for vertical). Input is case-insensitive." << endl;
+	cout << " - Using CTRL-Z will finish the board creation, then you'll need to choose whether you prefer to finish the board or save it for later." << endl << endl;
 	cout << "Word ( - = remove / ? = help)" << endl;
-	cout << " If you input an invalid word you will be required to write something else, until your input is valid.\n If you type '-' the word starting from that position will be removed.\n Typing '?' will display every possible insertion." << endl;
+	cout << " - You will be required to input any word that belongs to the dictionary and fits in the board, but it needs to respect the letters from the previously placed words." << endl;
+	cout << " - If you type '-' the word starting from that position will be removed." << endl;
+	cout << " - Typing '?' will display every possible insertion or replacement." << endl;
+	cout << " - You are allowed to replace the word on the position you picked." << endl;
 	cout << "-------------------------" << endl << endl;
 	cout << "OPTIONS:" << endl;
 	cout << " 1 - Create puzzle" << endl;
