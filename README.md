@@ -7,5 +7,3 @@ WOOOOOOOOOOOO
 lo
 lol
 lololol
-
-X D D DD D D D D DD D 
